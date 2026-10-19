@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
+import { addInterimMeasure } from '@/data/api'
 import { demoUsers } from '@/data/demoUsers'
 import type { Profile } from '@/types'
 import { AuthContext } from './useAuth'
@@ -120,4 +121,32 @@ it('shows audits and policy reviews with demo data', async () => {
   expect(
     screen.getByRole('button', { name: 'Mark Safeguarding policy reviewed' }),
   ).toBeInTheDocument()
+})
+
+it('moves a measure to history once its item is no longer red', async () => {
+  await addInterimMeasure(manager, {
+    itemKey: 'dbs:s1',
+    note: 'Historic measure note',
+  })
+  const router = createMemoryRouter(routes, {
+    initialEntries: ['/manager/interim-measures'],
+  })
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <AuthContext
+        value={{
+          profile: manager,
+          loading: false,
+          signOut: async () => {},
+          signInAs: () => {},
+        }}
+      >
+        <RouterProvider router={router} />
+      </AuthContext>
+    </QueryClientProvider>,
+  )
+  expect(
+    await screen.findByRole('heading', { name: 'Closed measures' }),
+  ).toBeInTheDocument()
+  expect(screen.getByText('Historic measure note')).toBeInTheDocument()
 })

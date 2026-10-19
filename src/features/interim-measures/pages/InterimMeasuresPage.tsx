@@ -31,7 +31,7 @@ export function InterimMeasuresPage() {
   const add = useAddInterimMeasure()
   const [target, setTarget] = useState<ComplianceItem | null>(null)
 
-  const red =
+  const allItems =
     staff.data && training.data && measures.data
       ? buildComplianceItems(
           staff.data,
@@ -39,8 +39,14 @@ export function InterimMeasuresPage() {
           measures.data,
           undefined,
           amberDays,
-        ).filter((i) => i.status === 'red')
+        )
       : []
+  const red = allItems.filter((i) => i.status === 'red')
+  // A measure closes automatically once its item is no longer red; keep it as history.
+  const closed = (measures.data ?? []).flatMap((m) => {
+    const item = allItems.find((i) => i.key === m.itemKey)
+    return item && item.status !== 'red' ? [{ measure: m, item }] : []
+  })
   const needsNote = red.filter((i) => !i.interimMeasure)
   const active = red.filter((i) => i.interimMeasure)
   const homeName = (id: string) => homes.data?.find((h) => h.id === id)?.name
@@ -117,6 +123,29 @@ export function InterimMeasuresPage() {
               </Card>
             ))}
           </div>
+        )}
+
+        {closed.length > 0 && (
+          <section className="mt-8">
+            <h2 className="mb-3 text-lg font-semibold">Closed measures</h2>
+            <ul className="divide-y divide-line rounded-card border border-line bg-surface text-sm">
+              {closed.map(({ measure, item }) => (
+                <li key={measure.id} className="flex flex-col gap-1 px-4 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-medium">
+                      {item.label} — {item.subject}
+                    </span>
+                    <RagBadge status={item.status} label="Resolved" />
+                  </div>
+                  <span className="text-slate-600">
+                    {homeName(item.homeId)} · added{' '}
+                    {formatDate(measure.createdAt)}
+                  </span>
+                  <span>{measure.note}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
       </QueryState>
 
