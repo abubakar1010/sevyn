@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { FormError } from '@/components/ui/FormError'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Field, Input, Select } from '@/components/ui/Field'
@@ -8,7 +9,12 @@ import { Modal } from '@/components/ui/Modal'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { QueryState } from '@/components/ui/QueryState'
 import { Table, Td, Th } from '@/components/ui/Table'
-import { useHomes, useSaveYoungPerson, useYoungPeople } from '@/data/hooks'
+import {
+  useArchiveYoungPerson,
+  useHomes,
+  useSaveYoungPerson,
+  useYoungPeople,
+} from '@/data/hooks'
 import { useOfstedMode } from '@/features/ofsted-mode/useOfstedMode'
 import { formatDate } from '@/lib/format'
 import { useCanEdit } from '@/lib/useCanEdit'
@@ -23,6 +29,8 @@ export function YoungPeoplePage() {
   const people = useYoungPeople()
   const homes = useHomes()
   const save = useSaveYoungPerson()
+  const archive = useArchiveYoungPerson()
+  const [archiving, setArchiving] = useState<YoungPerson | null>(null)
   const [editing, setEditing] = useState<Editing>(null)
   const current = editing && editing !== 'new' ? editing : null
 
@@ -98,6 +106,14 @@ export function YoungPeoplePage() {
                         onClick={() => setEditing(y)}
                       >
                         Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Archive ${youngPersonName(y, ofsted)}`}
+                        onClick={() => setArchiving(y)}
+                      >
+                        Archive
                       </Button>
                     </Td>
                   )}
@@ -177,6 +193,21 @@ export function YoungPeoplePage() {
           </form>
         )}
       </Modal>
+      <ConfirmDialog
+        open={archiving !== null}
+        title="Archive record"
+        message={`Archive the record for ${archiving ? youngPersonName(archiving, ofsted) : ''}? It will be removed from active lists, and the change is recorded in the audit log.`}
+        confirmLabel="Archive"
+        pending={archive.isPending}
+        error={archive.error}
+        onClose={() => setArchiving(null)}
+        onConfirm={() =>
+          archive.mutate(
+            { id: archiving!.id },
+            { onSuccess: () => setArchiving(null) },
+          )
+        }
+      />
     </>
   )
 }
