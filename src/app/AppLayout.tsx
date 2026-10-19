@@ -75,9 +75,9 @@ export function AppLayout({ nav }: { nav: NavItem[] }) {
       </aside>
 
       <div className="order-3 min-w-0 flex-1 md:order-none">
-        <header className="sticky top-0 z-20 hidden items-center justify-between border-b border-line bg-white/75 px-8 py-3 backdrop-blur-md md:flex">
+        <header className="sticky top-0 z-20 hidden items-center justify-between border-b border-line bg-surface/75 px-8 py-3 backdrop-blur-md md:flex">
           <div className="leading-tight">
-            <p className="font-display text-lg font-semibold text-primary-950">
+            <p className="font-display text-lg font-semibold text-primary-950 dark:text-white">
               {org ?? 'Sevyn'}
             </p>
             <p className="text-xs text-slate-500">

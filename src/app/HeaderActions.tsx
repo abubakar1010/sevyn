@@ -1,3 +1,4 @@
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { cn } from '@/lib/cn'
 import { initialsOf, ROLE_LABEL } from '@/lib/roles'
 import { OfstedToggle } from './OfstedToggle'
@@ -17,6 +18,7 @@ export function HeaderActions({
   return (
     <div className="flex items-center gap-2 md:gap-3">
       {showOfsted && <OfstedToggle dark={dark} />}
+      <ThemeToggle dark={dark} />
       <div className="flex items-center gap-2.5">
         <span
           aria-hidden

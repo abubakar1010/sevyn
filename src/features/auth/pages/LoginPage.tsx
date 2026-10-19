@@ -4,6 +4,7 @@ import { useAuth } from '@/app/useAuth'
 import { Logo } from '@/components/brand/Logo'
 import { Button } from '@/components/ui/Button'
 import { Field, Input } from '@/components/ui/Field'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { demoUsers } from '@/data/demoUsers'
 import { ROLE_LABEL } from '@/lib/roles'
 import type { Role } from '@/types'
@@ -72,9 +73,10 @@ export function LoginPage() {
         </p>
       </aside>
 
-      <main className="flex flex-1 items-center justify-center p-6 md:p-12">
+      <main className="relative flex flex-1 items-center justify-center p-6 pt-16 md:p-12">
+        <ThemeToggle className="absolute top-3 right-3 z-10" />
         <div className="w-full max-w-sm animate-fade-up">
-          <h1 className="text-3xl font-semibold tracking-tight text-primary-950">
+          <h1 className="text-3xl font-semibold tracking-tight text-primary-950 dark:text-white">
             Welcome back
           </h1>
           <p className="mt-1 mb-6 text-slate-600">Sign in to continue.</p>
