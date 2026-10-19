@@ -11,15 +11,11 @@ interface QueryLike {
 /** Skeleton placeholder shown while data loads. */
 function LoadingSkeleton() {
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="flex animate-pulse flex-col gap-3"
-    >
+    <div role="status" aria-live="polite" className="flex flex-col gap-3">
       <span className="sr-only">Loading…</span>
-      <div className="h-24 rounded-card bg-slate-200" />
-      <div className="h-24 rounded-card bg-slate-200" />
-      <div className="h-24 rounded-card bg-slate-200" />
+      <div className="skeleton h-24 rounded-card" />
+      <div className="skeleton h-24 rounded-card" />
+      <div className="skeleton h-24 rounded-card" />
     </div>
   )
 }
