@@ -2,14 +2,16 @@
 
 /*
  * Sevyn design tokens.
- * Primary is a deep calm blue, deliberately distinct from the red/amber/green
- * compliance statuses so brand colour is never mistaken for a status.
- * Neutrals use Tailwind's slate scale.
+ * Primary is a deep, calm indigo-blue, deliberately distinct from the
+ * red/amber/green compliance statuses so brand colour is never mistaken for a
+ * status. Headings use Fraunces (a warm serif) over Inter for a human, caring
+ * tone; neutrals use Tailwind's slate scale.
  */
 @theme {
   --font-sans:
     'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
     sans-serif;
+  --font-display: 'Fraunces Variable', ui-serif, Georgia, serif;
 
   --color-primary-50: oklch(0.97 0.015 255);
   --color-primary-100: oklch(0.93 0.035 255);
@@ -20,13 +22,97 @@
   --color-primary-700: oklch(0.44 0.15 262);
   --color-primary-800: oklch(0.37 0.12 263);
   --color-primary-900: oklch(0.3 0.09 264);
+  --color-primary-950: oklch(0.22 0.07 270);
+  --color-accent-500: oklch(0.58 0.2 295);
+  --color-accent-700: oklch(0.45 0.19 295);
 
   --color-surface: #ffffff;
   --color-canvas: var(--color-slate-50);
   --color-line: var(--color-slate-200);
 
-  --radius-card: 0.75rem;
-  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.04);
+  --radius-card: 1rem;
+  --shadow-card:
+    0 1px 2px rgb(15 23 42 / 0.05), 0 4px 16px rgb(15 23 42 / 0.04);
+  --shadow-lift:
+    0 2px 4px rgb(15 23 42 / 0.06), 0 12px 28px rgb(49 46 129 / 0.14);
+
+  --animate-fade-up: fade-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.4s ease-out both;
+  --animate-scale-in: scale-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-float: float 9s ease-in-out infinite;
+  --animate-float-slow: float 13s ease-in-out infinite reverse;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-pulse-soft: pulse-soft 2.6s ease-in-out infinite;
+  --animate-gradient: gradient-shift 16s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0);
+  }
+}
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+@keyframes pulse-soft {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(239 68 68 / 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgb(239 68 68 / 0);
+  }
+}
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+@keyframes ring-draw {
+  from {
+    stroke-dashoffset: var(--ring-length);
+  }
 }
 
 @layer base {
@@ -35,8 +121,83 @@
   }
   body {
     @apply bg-canvas font-sans text-slate-900 antialiased;
+    background-image:
+      radial-gradient(
+        52rem 34rem at 100% -8%,
+        oklch(0.93 0.05 285 / 0.55),
+        transparent 60%
+      ),
+      radial-gradient(
+        40rem 28rem at -8% 30%,
+        oklch(0.94 0.04 245 / 0.6),
+        transparent 60%
+      );
+    background-attachment: fixed;
+  }
+  h1,
+  h2 {
+    @apply font-display;
   }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-primary-600;
+  }
+}
+
+@layer components {
+  /* Children rise in one after another. */
+  .stagger > * {
+    animation: var(--animate-fade-up);
+  }
+  .stagger > *:nth-child(1) {
+    animation-delay: 0.03s;
+  }
+  .stagger > *:nth-child(2) {
+    animation-delay: 0.09s;
+  }
+  .stagger > *:nth-child(3) {
+    animation-delay: 0.15s;
+  }
+  .stagger > *:nth-child(4) {
+    animation-delay: 0.21s;
+  }
+  .stagger > *:nth-child(5) {
+    animation-delay: 0.27s;
+  }
+  .stagger > *:nth-child(6) {
+    animation-delay: 0.33s;
+  }
+  .stagger > *:nth-child(n + 7) {
+    animation-delay: 0.39s;
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-slate-200) 25%,
+      var(--color-slate-100) 50%,
+      var(--color-slate-200) 75%
+    );
+    background-size: 200% 100%;
+    animation: var(--animate-shimmer);
+  }
+
+  dialog[open] {
+    animation: var(--animate-scale-in);
+  }
+  dialog[open]::backdrop {
+    animation: var(--animate-fade-in);
+    backdrop-filter: blur(3px);
+  }
+}
+
+/* Honour the OS "reduce motion" setting everywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
