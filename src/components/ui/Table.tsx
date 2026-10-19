@@ -50,7 +50,8 @@ export const Td = ({ className, label, ...p }: TdProps) => (
     data-label={label}
     className={cn(
       'border-b border-line px-4 py-3 align-middle',
-      'max-md:flex max-md:items-center max-md:justify-between max-md:gap-4 max-md:border-b-0 max-md:px-0 max-md:py-1.5 max-md:text-right',
+      'max-md:flex max-md:items-center max-md:gap-4 max-md:border-b-0 max-md:px-0 max-md:py-1.5 max-md:text-right',
+      label ? 'max-md:justify-between' : 'max-md:justify-end',
       'before:content-[attr(data-label)] before:text-left before:font-medium before:text-slate-500 md:before:hidden',
       className,
     )}
