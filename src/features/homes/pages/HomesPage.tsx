@@ -3,6 +3,7 @@ import { useAuth } from '@/app/useAuth'
 import { Button } from '@/components/ui/Button'
 import { FormError } from '@/components/ui/FormError'
 import { Card } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Field, Input } from '@/components/ui/Field'
 import { Modal } from '@/components/ui/Modal'
@@ -12,18 +13,23 @@ import { RagBadge } from '@/components/ui/RagBadge'
 import {
   useAddHome,
   useAddUnit,
+  useDeleteUnit,
   useHomes,
   useInterimMeasures,
   useStaff,
   useTrainingRecords,
   useUnits,
+  useUpdateHome,
   useAmberDays,
 } from '@/data/hooks'
 import { useCanEdit } from '@/lib/useCanEdit'
+import type { Home, Unit } from '@/types'
 import {
   buildComplianceItems,
   homeStatus,
 } from '@/features/compliance/compliance'
+
+type HomeEditing = Home | 'new' | null
 
 export function HomesPage() {
   const { profile } = useAuth()
@@ -36,7 +42,11 @@ export function HomesPage() {
   const amberDays = useAmberDays()
   const addHome = useAddHome()
   const addUnit = useAddUnit()
-  const [homeOpen, setHomeOpen] = useState(false)
+  const updateHome = useUpdateHome()
+  const removeUnit = useDeleteUnit()
+  const [homeEditing, setHomeEditing] = useState<HomeEditing>(null)
+  const [unitDeleting, setUnitDeleting] = useState<Unit | null>(null)
+  const currentHome = homeEditing && homeEditing !== 'new' ? homeEditing : null
   const [unitHome, setUnitHome] = useState<string | null>(null)
 
   const items =
@@ -53,13 +63,13 @@ export function HomesPage() {
   function submitHome(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const f = new FormData(e.currentTarget)
-    addHome.mutate(
-      {
-        name: String(f.get('name')).trim(),
-        address: String(f.get('address')).trim(),
-      },
-      { onSuccess: () => setHomeOpen(false) },
-    )
+    const fields = {
+      name: String(f.get('name')).trim(),
+      address: String(f.get('address')).trim(),
+    }
+    const done = { onSuccess: () => setHomeEditing(null) }
+    if (currentHome) updateHome.mutate({ id: currentHome.id, ...fields }, done)
+    else addHome.mutate(fields, done)
   }
 
   function submitUnit(e: FormEvent<HTMLFormElement>) {
@@ -82,7 +92,7 @@ export function HomesPage() {
         description="Residential homes, their units and current compliance status."
         actions={
           profile?.role === 'admin' && (
-            <Button onClick={() => setHomeOpen(true)}>Add home</Button>
+            <Button onClick={() => setHomeEditing('new')}>Add home</Button>
           )
         }
       />
@@ -101,7 +111,19 @@ export function HomesPage() {
                       <h2 className="text-lg font-semibold">{h.name}</h2>
                       <p className="text-sm text-slate-600">{h.address}</p>
                     </div>
-                    <RagBadge status={homeStatus(items, h.id)} />
+                    <div className="flex items-center gap-2">
+                      <RagBadge status={homeStatus(items, h.id)} />
+                      {profile?.role === 'admin' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          aria-label={`Edit ${h.name}`}
+                          onClick={() => setHomeEditing(h)}
+                        >
+                          Edit
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   <p className="text-sm text-slate-700">
                     {staff.data?.filter((s) => s.homeId === h.id).length} staff
@@ -113,8 +135,18 @@ export function HomesPage() {
                     {homeUnits.map((u) => (
                       <li key={u.id} className="flex justify-between px-3 py-2">
                         <span>{u.name}</span>
-                        <span className="text-slate-600">
+                        <span className="flex items-center gap-2 text-slate-600">
                           Capacity {u.capacity}
+                          {canEdit && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              aria-label={`Delete unit ${u.name}`}
+                              onClick={() => setUnitDeleting(u)}
+                            >
+                              Delete
+                            </Button>
+                          )}
                         </span>
                       </li>
                     ))}
@@ -137,23 +169,61 @@ export function HomesPage() {
       </QueryState>
 
       <Modal
-        open={homeOpen}
-        onClose={() => setHomeOpen(false)}
-        title="Add home"
+        open={homeEditing !== null}
+        onClose={() => setHomeEditing(null)}
+        title={currentHome ? 'Edit home' : 'Add home'}
       >
-        <form onSubmit={submitHome} className="flex flex-col gap-4">
-          <Field label="Home name">
-            {(p) => <Input name="name" required {...p} />}
-          </Field>
-          <Field label="Address">
-            {(p) => <Input name="address" required {...p} />}
-          </Field>
-          <FormError error={addHome.error} />
-          <Button type="submit" disabled={addHome.isPending}>
-            Save home
-          </Button>
-        </form>
+        {homeEditing !== null && (
+          <form
+            key={currentHome?.id ?? 'new'}
+            onSubmit={submitHome}
+            className="flex flex-col gap-4"
+          >
+            <Field label="Home name">
+              {(p) => (
+                <Input
+                  name="name"
+                  required
+                  defaultValue={currentHome?.name}
+                  {...p}
+                />
+              )}
+            </Field>
+            <Field label="Address">
+              {(p) => (
+                <Input
+                  name="address"
+                  required
+                  defaultValue={currentHome?.address}
+                  {...p}
+                />
+              )}
+            </Field>
+            <FormError error={currentHome ? updateHome.error : addHome.error} />
+            <Button
+              type="submit"
+              disabled={addHome.isPending || updateHome.isPending}
+            >
+              Save home
+            </Button>
+          </form>
+        )}
       </Modal>
+      <ConfirmDialog
+        open={unitDeleting !== null}
+        title="Delete unit"
+        message={`Delete the unit "${unitDeleting?.name}"? The deletion is recorded in the audit log.`}
+        confirmLabel="Delete unit"
+        pending={removeUnit.isPending}
+        error={removeUnit.error}
+        onClose={() => setUnitDeleting(null)}
+        onConfirm={() =>
+          removeUnit.mutate(
+            { id: unitDeleting!.id },
+            { onSuccess: () => setUnitDeleting(null) },
+          )
+        }
+      />
       <Modal
         open={unitHome !== null}
         onClose={() => setUnitHome(null)}
