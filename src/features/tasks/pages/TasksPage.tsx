@@ -1,25 +1,31 @@
 import { useState, type FormEvent } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { FormError } from '@/components/ui/FormError'
 import { Card } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Field, Input, Select } from '@/components/ui/Field'
+import { FormError } from '@/components/ui/FormError'
 import { Modal } from '@/components/ui/Modal'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { QueryState } from '@/components/ui/QueryState'
 import { RagBadge } from '@/components/ui/RagBadge'
 import {
   useAddTask,
+  useDeleteTask,
   useHomes,
   useSetTaskDone,
   useStaff,
   useTasks,
+  useUpdateTask,
 } from '@/data/hooks'
+import { daysFromNow } from '@/data/mock'
 import { cn } from '@/lib/cn'
 import { formatDate } from '@/lib/format'
-import { daysFromNow } from '@/data/mock'
 import { useCanEdit } from '@/lib/useCanEdit'
+import type { Task } from '@/types'
+
+type Editing = Task | 'new' | null
 
 export function TasksPage() {
   const canEdit = useCanEdit()
@@ -27,25 +33,30 @@ export function TasksPage() {
   const homes = useHomes()
   const staff = useStaff()
   const add = useAddTask()
+  const update = useUpdateTask()
+  const remove = useDeleteTask()
   const setDone = useSetTaskDone()
-  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState<Editing>(null)
+  const [deleting, setDeleting] = useState<Task | null>(null)
   const [homeId, setHomeId] = useState('')
 
   const today = daysFromNow(0)
-  const effectiveHome = homeId || homes.data?.[0]?.id || ''
+  const current = editing && editing !== 'new' ? editing : null
+  const effectiveHome = current?.homeId ?? (homeId || homes.data?.[0]?.id || '')
+  const saving = add.isPending || update.isPending
+  const saveError = current ? update.error : add.error
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const f = new FormData(e.currentTarget)
-    add.mutate(
-      {
-        homeId: effectiveHome,
-        title: String(f.get('title')).trim(),
-        assigneeId: String(f.get('assigneeId')),
-        dueDate: String(f.get('dueDate')),
-      },
-      { onSuccess: () => setOpen(false) },
-    )
+    const fields = {
+      title: String(f.get('title')).trim(),
+      assigneeId: String(f.get('assigneeId')),
+      dueDate: String(f.get('dueDate')),
+    }
+    const done = { onSuccess: () => setEditing(null) }
+    if (current) update.mutate({ id: current.id, ...fields }, done)
+    else add.mutate({ homeId: effectiveHome, ...fields }, done)
   }
 
   return (
@@ -58,7 +69,7 @@ export function TasksPage() {
             : 'Tasks assigned to you.'
         }
         actions={
-          canEdit && <Button onClick={() => setOpen(true)}>New task</Button>
+          canEdit && <Button onClick={() => setEditing('new')}>New task</Button>
         }
       />
       <QueryState queries={[tasks, homes, staff]}>
@@ -100,6 +111,26 @@ export function TasksPage() {
                   ) : t.dueDate < today ? (
                     <RagBadge status="red" label="Overdue" />
                   ) : null}
+                  {canEdit && (
+                    <div className="flex shrink-0 gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Edit ${t.title}`}
+                        onClick={() => setEditing(t)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Delete ${t.title}`}
+                        onClick={() => setDeleting(t)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  )}
                 </Card>
               </li>
             ))}
@@ -107,56 +138,96 @@ export function TasksPage() {
         )}
       </QueryState>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="New task">
-        <form onSubmit={submit} className="flex flex-col gap-4">
-          <Field label="Title">
-            {(p) => <Input name="title" required {...p} />}
-          </Field>
-          <Field label="Home">
-            {(p) => (
-              <Select
-                value={effectiveHome}
-                onChange={(e) => setHomeId(e.target.value)}
-                {...p}
-              >
-                {homes.data?.map((h) => (
-                  <option key={h.id} value={h.id}>
-                    {h.name}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
-          <Field label="Assign to">
-            {(p) => (
-              <Select key={effectiveHome} name="assigneeId" required {...p}>
-                {staff.data
-                  ?.filter((s) => s.homeId === effectiveHome)
-                  .map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.fullName}
+      <Modal
+        open={editing !== null}
+        onClose={() => setEditing(null)}
+        title={current ? 'Edit task' : 'New task'}
+      >
+        {editing !== null && (
+          <form
+            key={current?.id ?? 'new'}
+            onSubmit={submit}
+            className="flex flex-col gap-4"
+          >
+            <Field label="Title">
+              {(p) => (
+                <Input
+                  name="title"
+                  required
+                  defaultValue={current?.title}
+                  {...p}
+                />
+              )}
+            </Field>
+            <Field label="Home">
+              {(p) => (
+                <Select
+                  value={effectiveHome}
+                  disabled={current !== null}
+                  onChange={(e) => setHomeId(e.target.value)}
+                  {...p}
+                >
+                  {homes.data?.map((h) => (
+                    <option key={h.id} value={h.id}>
+                      {h.name}
                     </option>
                   ))}
-              </Select>
-            )}
-          </Field>
-          <Field label="Due date">
-            {(p) => (
-              <Input
-                name="dueDate"
-                type="date"
-                required
-                defaultValue={today}
-                {...p}
-              />
-            )}
-          </Field>
-          <FormError error={add.error} />
-          <Button type="submit" disabled={add.isPending}>
-            Create task
-          </Button>
-        </form>
+                </Select>
+              )}
+            </Field>
+            <Field label="Assign to">
+              {(p) => (
+                <Select
+                  key={effectiveHome}
+                  name="assigneeId"
+                  required
+                  defaultValue={current?.assigneeId}
+                  {...p}
+                >
+                  {staff.data
+                    ?.filter((s) => s.homeId === effectiveHome)
+                    .map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.fullName}
+                      </option>
+                    ))}
+                </Select>
+              )}
+            </Field>
+            <Field label="Due date">
+              {(p) => (
+                <Input
+                  name="dueDate"
+                  type="date"
+                  required
+                  defaultValue={current?.dueDate ?? today}
+                  {...p}
+                />
+              )}
+            </Field>
+            <FormError error={saveError} />
+            <Button type="submit" disabled={saving}>
+              {current ? 'Save changes' : 'Create task'}
+            </Button>
+          </form>
+        )}
       </Modal>
+
+      <ConfirmDialog
+        open={deleting !== null}
+        title="Delete task"
+        message={`Delete "${deleting?.title}"? This cannot be undone, but the deletion is recorded in the audit log.`}
+        confirmLabel="Delete task"
+        pending={remove.isPending}
+        error={remove.error}
+        onClose={() => setDeleting(null)}
+        onConfirm={() =>
+          remove.mutate(
+            { id: deleting!.id },
+            { onSuccess: () => setDeleting(null) },
+          )
+        }
+      />
     </>
   )
 }
