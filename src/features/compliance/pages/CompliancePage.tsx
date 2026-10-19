@@ -1,3 +1,4 @@
+import { useAuth } from '@/app/useAuth'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -10,19 +11,16 @@ import {
   useTrainingRecords,
   useAmberDays,
 } from '@/data/hooks'
-import { cn } from '@/lib/cn'
 import { formatDate } from '@/lib/format'
 import type { Rag } from '@/types'
 import { buildComplianceItems, countByStatus, homeStatus } from '../compliance'
+import { ScoreHero } from '../ScoreHero'
+import { StatTile } from '../StatTile'
 
-const TILE: Record<Rag, string> = {
-  red: 'border-red-200 bg-red-50 text-red-900',
-  amber: 'border-amber-200 bg-amber-50 text-amber-900',
-  green: 'border-green-200 bg-green-50 text-green-900',
-}
 const ORDER: Rag[] = ['red', 'amber', 'green']
 
 export function CompliancePage() {
+  const { profile } = useAuth()
   const homes = useHomes()
   const staff = useStaff()
   const training = useTrainingRecords()
@@ -49,33 +47,39 @@ export function CompliancePage() {
     amberDays,
   )
   const counts = countByStatus(items)
+  const total = counts.red + counts.amber + counts.green
+  const percent = total === 0 ? 100 : Math.round((counts.green / total) * 100)
   const outstanding = items
     .filter((i) => i.status !== 'green')
     .sort((a, b) => ORDER.indexOf(a.status) - ORDER.indexOf(b.status))
 
   return (
-    <>
+    <div className="stagger">
       <PageHeader
         title="Compliance dashboard"
         description="Live status from staff DBS, safeguarding and training dates."
       />
+      <ScoreHero
+        firstName={profile?.fullName.split(' ')[0] ?? ''}
+        percent={percent}
+        red={counts.red}
+        amber={counts.amber}
+      />
 
       <section aria-label="Summary" className="grid grid-cols-3 gap-3">
         {ORDER.map((s) => (
-          <div
-            key={s}
-            className={cn('rounded-card border p-3 md:p-4', TILE[s])}
-          >
-            <p className="text-3xl font-semibold">{counts[s]}</p>
-            <RagBadge status={s} />
-          </div>
+          <StatTile key={s} status={s} count={counts[s]} />
         ))}
       </section>
 
       <h2 className="mt-8 mb-3 text-lg font-semibold">Homes</h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {homes.data.map((h) => (
-          <Card key={h.id} className="flex items-center justify-between gap-3">
+          <Card
+            key={h.id}
+            interactive
+            className="flex items-center justify-between gap-3"
+          >
             <div>
               <p className="font-medium">{h.name}</p>
               <p className="text-sm text-slate-600">
@@ -140,6 +144,6 @@ export function CompliancePage() {
           </tbody>
         </Table>
       )}
-    </>
+    </div>
   )
 }
