@@ -63,3 +63,25 @@ describe('archive and delete', () => {
     expect((await api.listAuditLog(manager))[0].action).toBe('Deleted task')
   })
 })
+
+describe('interim measures', () => {
+  it('audits a readable target and home instead of the internal key', async () => {
+    await api.addInterimMeasure(manager, {
+      itemKey: 'dbs:s6',
+      note: 'Supervised on all shifts.',
+    })
+    const entry = (await api.listAuditLog(manager))[0]
+    expect(entry.target).toBe('DBS recheck — Taylor Brooks')
+    expect(entry.homeId).toBe('h2')
+  })
+  it('rejects items in homes the manager cannot access', async () => {
+    await expect(
+      api.addInterimMeasure(manager, { itemKey: 'dbs:s7', note: 'x' }),
+    ).rejects.toThrow('Not permitted for this home')
+  })
+  it('rejects unknown items', async () => {
+    await expect(
+      api.addInterimMeasure(manager, { itemKey: 'dbs:nope', note: 'x' }),
+    ).rejects.toThrow('not found')
+  })
+})

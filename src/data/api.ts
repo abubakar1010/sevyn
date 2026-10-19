@@ -131,11 +131,35 @@ export async function addTrainingRecord(
   return delay(true)
 }
 
+const ITEM_LABELS: Record<string, string> = {
+  dbs: 'DBS recheck',
+  safeguarding: 'Safeguarding training',
+}
+
+/** Turns a compliance item key (e.g. `dbs:s6`) into a readable label and its home. */
+function describeItem(key: string): { target: string; homeId: string } | null {
+  const [kind, id] = key.split(':')
+  const record =
+    kind === 'training'
+      ? mock.trainingRecords.find((t) => t.id === id)
+      : undefined
+  const member = mock.staff.find(
+    (st) => st.id === (record ? record.staffId : id),
+  )
+  if (!member) return null
+  const label = record ? record.course : ITEM_LABELS[kind]
+  return label
+    ? { target: `${label} — ${member.fullName}`, homeId: member.homeId }
+    : null
+}
+
 export async function addInterimMeasure(
   profile: Profile,
   input: { itemKey: string; note: string },
 ) {
-  assertCanWrite(profile)
+  const item = describeItem(input.itemKey)
+  if (!item) throw new Error('Compliance item not found')
+  assertCanWrite(profile, item.homeId)
   if (!input.note.trim()) throw new Error('A note is required')
   mock.interimMeasures.push({
     id: newId(),
@@ -144,7 +168,7 @@ export async function addInterimMeasure(
     createdAt: mock.daysFromNow(0),
     active: true,
   })
-  audit(profile, 'Added interim measure', input.itemKey)
+  audit(profile, 'Added interim measure', item.target, item.homeId)
   return delay(true)
 }
 
