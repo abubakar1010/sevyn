@@ -1,0 +1,42 @@
+@import 'tailwindcss';
+
+/*
+ * Sevyn design tokens.
+ * Primary is a deep calm blue, deliberately distinct from the red/amber/green
+ * compliance statuses so brand colour is never mistaken for a status.
+ * Neutrals use Tailwind's slate scale.
+ */
+@theme {
+  --font-sans:
+    'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    sans-serif;
+
+  --color-primary-50: oklch(0.97 0.015 255);
+  --color-primary-100: oklch(0.93 0.035 255);
+  --color-primary-200: oklch(0.87 0.065 255);
+  --color-primary-300: oklch(0.78 0.1 257);
+  --color-primary-500: oklch(0.57 0.15 259);
+  --color-primary-600: oklch(0.5 0.16 260);
+  --color-primary-700: oklch(0.44 0.15 262);
+  --color-primary-800: oklch(0.37 0.12 263);
+  --color-primary-900: oklch(0.3 0.09 264);
+
+  --color-surface: #ffffff;
+  --color-canvas: var(--color-slate-50);
+  --color-line: var(--color-slate-200);
+
+  --radius-card: 0.75rem;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.04);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-canvas font-sans text-slate-900 antialiased;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary-600;
+  }
+}
