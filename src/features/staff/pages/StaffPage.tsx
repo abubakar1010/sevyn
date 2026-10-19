@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { FormError } from '@/components/ui/FormError'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Field, Input, Select } from '@/components/ui/Field'
@@ -7,7 +8,7 @@ import { Modal } from '@/components/ui/Modal'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { QueryState } from '@/components/ui/QueryState'
 import { Table, Td, Th } from '@/components/ui/Table'
-import { useHomes, useSaveStaff, useStaff } from '@/data/hooks'
+import { useArchiveStaff, useHomes, useSaveStaff, useStaff } from '@/data/hooks'
 import { useCanEdit } from '@/lib/useCanEdit'
 import { DateStatus } from '@/features/compliance/DateStatus'
 import { useOfstedMode } from '@/features/ofsted-mode/useOfstedMode'
@@ -21,6 +22,8 @@ export function StaffPage() {
   const staff = useStaff()
   const homes = useHomes()
   const save = useSaveStaff()
+  const archive = useArchiveStaff()
+  const [archiving, setArchiving] = useState<StaffMember | null>(null)
   const [editing, setEditing] = useState<Editing>(null)
   const current = editing && editing !== 'new' ? editing : null
 
@@ -99,6 +102,14 @@ export function StaffPage() {
                         onClick={() => setEditing(s)}
                       >
                         Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Archive ${s.fullName}`}
+                        onClick={() => setArchiving(s)}
+                      >
+                        Archive
                       </Button>
                     </Td>
                   )}
@@ -188,6 +199,21 @@ export function StaffPage() {
           </form>
         )}
       </Modal>
+      <ConfirmDialog
+        open={archiving !== null}
+        title="Archive staff member"
+        message={`Archive ${archiving?.fullName}? They will be removed from active lists and compliance figures. The change is recorded in the audit log.`}
+        confirmLabel="Archive"
+        pending={archive.isPending}
+        error={archive.error}
+        onClose={() => setArchiving(null)}
+        onConfirm={() =>
+          archive.mutate(
+            { id: archiving!.id },
+            { onSuccess: () => setArchiving(null) },
+          )
+        }
+      />
     </>
   )
 }
