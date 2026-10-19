@@ -31,11 +31,11 @@ export function AuditLogPage() {
             <tbody>
               {log.data?.map((e) => (
                 <tr key={e.id}>
-                  <Td>{formatDateTime(e.at)}</Td>
-                  <Td>{e.actorName}</Td>
-                  <Td>{e.action}</Td>
-                  <Td>{e.target}</Td>
-                  <Td>
+                  <Td label="When">{formatDateTime(e.at)}</Td>
+                  <Td label="Who">{e.actorName}</Td>
+                  <Td label="Action">{e.action}</Td>
+                  <Td label="Target">{e.target}</Td>
+                  <Td label="Home">
                     {homes.data?.find((h) => h.id === e.homeId)?.name ?? '—'}
                   </Td>
                 </tr>

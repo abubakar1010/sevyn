@@ -75,16 +75,20 @@ export function StaffPage() {
             <tbody>
               {staff.data?.map((s) => (
                 <tr key={s.id}>
-                  <Td className="font-medium">{s.fullName}</Td>
-                  <Td>{s.jobTitle}</Td>
-                  <Td>{homes.data?.find((h) => h.id === s.homeId)?.name}</Td>
-                  <Td>
+                  <Td label="Name" className="font-medium">
+                    {s.fullName}
+                  </Td>
+                  <Td label="Role">{s.jobTitle}</Td>
+                  <Td label="Home">
+                    {homes.data?.find((h) => h.id === s.homeId)?.name}
+                  </Td>
+                  <Td label="DBS recheck">
                     <DateStatus date={s.dbsRecheckDate} />
                   </Td>
-                  <Td>
+                  <Td label="Safeguarding training">
                     <DateStatus date={s.safeguardingExpiry} />
                   </Td>
-                  <Td>{ofsted ? '••••••••' : s.address}</Td>
+                  <Td label="Address">{ofsted ? '••••••••' : s.address}</Td>
                   {canEdit && (
                     <Td>
                       <Button

@@ -72,17 +72,19 @@ export function UsersPage() {
           <tbody>
             {users.data?.map((u) => (
               <tr key={u.id}>
-                <Td className="font-medium">{u.fullName}</Td>
-                <Td>{u.email}</Td>
-                <Td>{ROLE_LABEL[u.role]}</Td>
-                <Td>
+                <Td label="Name" className="font-medium">
+                  {u.fullName}
+                </Td>
+                <Td label="Email">{u.email}</Td>
+                <Td label="Role">{ROLE_LABEL[u.role]}</Td>
+                <Td label="Homes">
                   {u.role === 'admin'
                     ? 'All homes'
                     : u.homeIds
                         .map((id) => homes.data?.find((h) => h.id === id)?.name)
                         .join(', ') || 'None'}
                 </Td>
-                <Td>
+                <Td label="Status">
                   {u.active ? (
                     <Badge tone="info">Active</Badge>
                   ) : (

@@ -72,10 +72,16 @@ export function YoungPeoplePage() {
             <tbody>
               {people.data?.map((y) => (
                 <tr key={y.id}>
-                  <Td className="font-medium">{youngPersonName(y, ofsted)}</Td>
-                  <Td>{homes.data?.find((h) => h.id === y.homeId)?.name}</Td>
-                  <Td>{ofsted ? '••••••' : formatDate(y.dateOfBirth)}</Td>
-                  <Td>
+                  <Td label="Name" className="font-medium">
+                    {youngPersonName(y, ofsted)}
+                  </Td>
+                  <Td label="Home">
+                    {homes.data?.find((h) => h.id === y.homeId)?.name}
+                  </Td>
+                  <Td label="Date of birth">
+                    {ofsted ? '••••••' : formatDate(y.dateOfBirth)}
+                  </Td>
+                  <Td label="Access">
                     {y.restricted ? (
                       <Badge tone="info">Restricted</Badge>
                     ) : (

@@ -151,9 +151,11 @@ export function AuditsPoliciesPage() {
               <tbody>
                 {policies.data?.map((p) => (
                   <tr key={p.id}>
-                    <Td className="font-medium">{p.title}</Td>
-                    <Td>{formatDate(p.lastReviewed)}</Td>
-                    <Td>
+                    <Td label="Policy" className="font-medium">
+                      {p.title}
+                    </Td>
+                    <Td label="Last reviewed">{formatDate(p.lastReviewed)}</Td>
+                    <Td label="Next review">
                       <div className="flex flex-col items-start gap-1">
                         <RagBadge
                           status={ragForDate(

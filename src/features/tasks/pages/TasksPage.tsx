@@ -68,15 +68,17 @@ export function TasksPage() {
             {tasks.data?.map((t) => (
               <li key={t.id}>
                 <Card className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={t.done}
-                    aria-label={`Mark "${t.title}" ${t.done ? 'not done' : 'done'}`}
-                    onChange={(e) =>
-                      setDone.mutate({ id: t.id, done: e.target.checked })
-                    }
-                    className="size-6 shrink-0 accent-primary-700"
-                  />
+                  <label className="-m-2 flex size-11 shrink-0 cursor-pointer items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={t.done}
+                      aria-label={`Mark "${t.title}" ${t.done ? 'not done' : 'done'}`}
+                      onChange={(e) =>
+                        setDone.mutate({ id: t.id, done: e.target.checked })
+                      }
+                      className="size-6 accent-primary-700"
+                    />
+                  </label>
                   <div className="min-w-0 flex-1">
                     <p
                       className={cn(

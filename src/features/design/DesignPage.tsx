@@ -60,16 +60,16 @@ export function DesignPage() {
         </thead>
         <tbody>
           <tr>
-            <Td>Sample Person A</Td>
-            <Td>12 Jan 2027</Td>
-            <Td>
+            <Td label="Staff member">Sample Person A</Td>
+            <Td label="DBS recheck">12 Jan 2027</Td>
+            <Td label="Status">
               <RagBadge status="green" />
             </Td>
           </tr>
           <tr>
-            <Td>Sample Person B</Td>
-            <Td>02 Nov 2026</Td>
-            <Td>
+            <Td label="Staff member">Sample Person B</Td>
+            <Td label="DBS recheck">02 Nov 2026</Td>
+            <Td label="Status">
               <RagBadge status="amber" />
             </Td>
           </tr>

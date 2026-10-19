@@ -67,12 +67,16 @@ export function DocumentsPage() {
             <tbody>
               {docs.data?.map((d) => (
                 <tr key={d.id}>
-                  <Td className="font-medium">{d.title}</Td>
-                  <Td>
+                  <Td label="Title" className="font-medium">
+                    {d.title}
+                  </Td>
+                  <Td label="Category">
                     <Badge>{d.category}</Badge>
                   </Td>
-                  <Td>{homes.data?.find((h) => h.id === d.homeId)?.name}</Td>
-                  <Td>{formatDate(d.uploadedAt)}</Td>
+                  <Td label="Home">
+                    {homes.data?.find((h) => h.id === d.homeId)?.name}
+                  </Td>
+                  <Td label="Uploaded">{formatDate(d.uploadedAt)}</Td>
                   <Td>
                     <Button
                       variant="secondary"

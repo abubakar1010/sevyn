@@ -49,8 +49,10 @@ export function OrganisationsPage() {
             <tbody>
               {orgs.data?.map((o) => (
                 <tr key={o.id}>
-                  <Td className="font-medium">{o.name}</Td>
-                  <Td>{formatDate(o.createdAt)}</Td>
+                  <Td label="Name" className="font-medium">
+                    {o.name}
+                  </Td>
+                  <Td label="Created">{formatDate(o.createdAt)}</Td>
                 </tr>
               ))}
             </tbody>

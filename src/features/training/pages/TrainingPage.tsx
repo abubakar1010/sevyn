@@ -80,7 +80,7 @@ export function TrainingPage() {
         }
       />
       <QueryState queries={[staff, records]}>
-        <Table>
+        <Table stack={false}>
           <thead>
             <tr>
               <Th>Staff member</Th>

@@ -112,14 +112,19 @@ export function CompliancePage() {
           <tbody>
             {outstanding.map((i) => (
               <tr key={i.key}>
-                <Td>
+                <Td label="Status">
                   <RagBadge status={i.status} />
                 </Td>
-                <Td>{i.label}</Td>
-                <Td>{i.subject}</Td>
-                <Td>{homes.data.find((h) => h.id === i.homeId)?.name}</Td>
-                <Td>{formatDate(i.due)}</Td>
-                <Td className="max-w-xs whitespace-normal">
+                <Td label="Item">{i.label}</Td>
+                <Td label="Person">{i.subject}</Td>
+                <Td label="Home">
+                  {homes.data.find((h) => h.id === i.homeId)?.name}
+                </Td>
+                <Td label="Due">{formatDate(i.due)}</Td>
+                <Td
+                  label="Interim measure"
+                  className="max-w-xs whitespace-normal"
+                >
                   {i.interimMeasure ? (
                     i.interimMeasure.note
                   ) : i.status === 'red' ? (

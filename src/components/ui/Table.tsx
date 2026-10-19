@@ -1,20 +1,31 @@
 import type { HTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from 'react'
 import { cn } from '@/lib/cn'
 
-/** Scrolls horizontally on narrow screens rather than breaking the page layout. */
-export function Table({
-  className,
-  ...props
-}: HTMLAttributes<HTMLTableElement>) {
+// Under `md` a stacked table becomes one card per row, each cell showing its
+// `label` (from Td) beside the value, so no column is hidden off-screen.
+const STACKED =
+  'md:min-w-max max-md:block max-md:[&_thead]:hidden max-md:[&_tbody]:block max-md:[&_tr]:block max-md:[&_tr]:border-b max-md:[&_tr]:border-line max-md:[&_tr]:p-3 max-md:[&_tr:last-child]:border-b-0'
+
+interface TableProps extends HTMLAttributes<HTMLTableElement> {
+  /** Set false for wide matrices that should scroll horizontally on phones. */
+  stack?: boolean
+}
+
+export function Table({ className, stack = true, ...props }: TableProps) {
   return (
-    <div className="overflow-x-auto rounded-card border border-line bg-surface shadow-card">
+    <div className="relative overflow-x-auto rounded-card border border-line bg-surface shadow-card [&_tbody_tr:last-child_td]:border-b-0">
       <table
-        className={cn('w-full min-w-max text-left text-sm', className)}
+        className={cn(
+          'w-full text-left text-sm',
+          stack ? STACKED : 'min-w-max',
+          className,
+        )}
         {...props}
       />
     </div>
   )
 }
+
 export const Th = ({
   className,
   ...p
@@ -28,13 +39,19 @@ export const Th = ({
     {...p}
   />
 )
-export const Td = ({
-  className,
-  ...p
-}: TdHTMLAttributes<HTMLTableCellElement>) => (
+
+interface TdProps extends TdHTMLAttributes<HTMLTableCellElement> {
+  /** Column name shown beside the value when the table is stacked on phones. */
+  label?: string
+}
+
+export const Td = ({ className, label, ...p }: TdProps) => (
   <td
+    data-label={label}
     className={cn(
-      'border-b border-line px-4 py-3 align-middle last:border-b-0',
+      'border-b border-line px-4 py-3 align-middle',
+      'max-md:flex max-md:items-center max-md:justify-between max-md:gap-4 max-md:border-b-0 max-md:px-0 max-md:py-1.5 max-md:text-right',
+      'before:content-[attr(data-label)] before:text-left before:font-medium before:text-slate-500 md:before:hidden',
       className,
     )}
     {...p}
