@@ -39,6 +39,14 @@ function assertCanWrite(profile: Profile, homeId?: string) {
 
 const newId = () => crypto.randomUUID()
 
+/** Validation lives here so the same rules apply whichever backend sits behind these functions. */
+function requireText(value: string, label: string) {
+  if (!value.trim()) throw new Error(`${label} is required`)
+}
+
+const sameName = (a: string, b: string) =>
+  a.trim().toLowerCase() === b.trim().toLowerCase()
+
 /** Every write appends here. There is deliberately no function to edit or remove entries. */
 function audit(
   profile: Profile,
@@ -83,6 +91,10 @@ export async function addHome(
   profile: Profile,
   input: Pick<Home, 'name' | 'address'>,
 ) {
+  requireText(input.name, 'Home name')
+  requireText(input.address, 'Address')
+  if (mock.homes.some((h) => sameName(h.name, input.name)))
+    throw new Error('A home with this name already exists')
   if (profile.role !== 'admin') throw new Error('Only admins can create homes')
   mock.homes.push({ id: newId(), ...input })
   audit(profile, 'Added home', input.name)
@@ -90,6 +102,9 @@ export async function addHome(
 }
 
 export async function addUnit(profile: Profile, input: Omit<Unit, 'id'>) {
+  requireText(input.name, 'Unit name')
+  if (!Number.isInteger(input.capacity) || input.capacity < 1)
+    throw new Error('Capacity must be a whole number of at least 1')
   assertCanWrite(profile, input.homeId)
   mock.units.push({ id: newId(), ...input })
   audit(profile, 'Added unit', input.name, input.homeId)
@@ -100,6 +115,8 @@ export async function saveStaff(
   profile: Profile,
   input: Omit<StaffMember, 'id'> & { id?: string },
 ) {
+  requireText(input.fullName, 'Full name')
+  requireText(input.jobTitle, 'Job title')
   assertCanWrite(profile, input.homeId)
   const existing = input.id
     ? mock.staff.findIndex((s) => s.id === input.id)
@@ -119,6 +136,9 @@ export async function addTrainingRecord(
   profile: Profile,
   input: Omit<TrainingRecord, 'id'>,
 ) {
+  requireText(input.course, 'Course')
+  if (input.expiresOn && input.expiresOn < input.completedOn)
+    throw new Error('Expiry date must be on or after the completion date')
   const member = mock.staff.find((s) => s.id === input.staffId)
   assertCanWrite(profile, member?.homeId)
   mock.trainingRecords.push({ id: newId(), ...input })
@@ -186,6 +206,9 @@ export async function saveYoungPerson(
   profile: Profile,
   input: Omit<YoungPerson, 'id' | 'initials'> & { id?: string },
 ) {
+  requireText(input.fullName, 'Full name')
+  if (input.dateOfBirth > mock.daysFromNow(0))
+    throw new Error('Date of birth cannot be in the future')
   assertCanWrite(profile, input.homeId)
   const initials = input.fullName
     .split(/\s+/)
@@ -251,6 +274,7 @@ export async function addTask(
   profile: Profile,
   input: Omit<Task, 'id' | 'done'>,
 ) {
+  requireText(input.title, 'Title')
   assertCanWrite(profile, input.homeId)
   mock.tasks.push({ id: newId(), done: false, ...input })
   audit(profile, 'Created task', input.title, input.homeId)
@@ -287,6 +311,7 @@ export async function addDocument(
     fileName: string
   },
 ) {
+  requireText(input.title, 'Title')
   assertCanWrite(profile, input.homeId)
   mock.documents.push({
     id: newId(),
@@ -318,6 +343,11 @@ export async function createOrganisation(
   profile: Profile,
   input: { name: string; firstAdminEmail: string },
 ) {
+  requireText(input.name, 'Organisation name')
+  if (!/^\S+@\S+\.\S+$/.test(input.firstAdminEmail))
+    throw new Error('Enter a valid email address')
+  if (mock.organisations.some((o) => sameName(o.name, input.name)))
+    throw new Error('An organisation with this name already exists')
   assertAdmin(profile)
   mock.organisations.push({
     id: newId(),
@@ -337,6 +367,17 @@ export async function saveUser(
   profile: Profile,
   input: Omit<AppUser, 'id' | 'active'> & { id?: string },
 ) {
+  requireText(input.fullName, 'Full name')
+  if (!/^\S+@\S+\.\S+$/.test(input.email))
+    throw new Error('Enter a valid email address')
+  if (
+    mock.appUsers.some(
+      (u) => u.id !== input.id && sameName(u.email, input.email),
+    )
+  )
+    throw new Error('A user with this email already exists')
+  if (input.role !== 'admin' && input.homeIds.length === 0)
+    throw new Error('Select at least one home for this user')
   assertAdmin(profile)
   const idx = input.id ? mock.appUsers.findIndex((u) => u.id === input.id) : -1
   const homeIds = input.role === 'admin' ? [] : input.homeIds
@@ -396,6 +437,7 @@ export async function addAudit(
   profile: Profile,
   input: Pick<Audit, 'homeId' | 'title' | 'auditDate' | 'requiredAction'>,
 ) {
+  requireText(input.title, 'Audit title')
   assertCanWrite(profile, input.homeId)
   mock.audits.push({
     id: newId(),
@@ -429,6 +471,7 @@ export async function addPolicy(
   profile: Profile,
   input: Pick<Policy, 'title' | 'reviewDue'>,
 ) {
+  requireText(input.title, 'Policy title')
   assertCanWrite(profile)
   mock.policies.push({
     id: newId(),
@@ -457,6 +500,7 @@ export async function updateTask(
   profile: Profile,
   input: Pick<Task, 'id' | 'title' | 'assigneeId' | 'dueDate'>,
 ) {
+  requireText(input.title, 'Title')
   const task = mock.tasks.find((t) => t.id === input.id)
   if (!task) throw new Error('Task not found')
   assertCanWrite(profile, task.homeId)
@@ -498,6 +542,9 @@ export async function updateHome(
   profile: Profile,
   input: Pick<Home, 'id' | 'name' | 'address'>,
 ) {
+  requireText(input.name, 'Home name')
+  if (mock.homes.some((h) => h.id !== input.id && sameName(h.name, input.name)))
+    throw new Error('A home with this name already exists')
   if (profile.role !== 'admin') throw new Error('Only admins can edit homes')
   const home = mock.homes.find((h) => h.id === input.id)
   if (!home) throw new Error('Home not found')

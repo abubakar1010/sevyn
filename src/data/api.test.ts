@@ -85,3 +85,73 @@ describe('interim measures', () => {
     ).rejects.toThrow('not found')
   })
 })
+
+describe('validation', () => {
+  it('rejects whitespace-only names and titles', async () => {
+    await expect(
+      api.addTask(manager, {
+        homeId: 'h1',
+        title: '   ',
+        assigneeId: 's1',
+        dueDate: '2026-12-01',
+      }),
+    ).rejects.toThrow('Title is required')
+    await expect(
+      api.addHome(admin, { name: ' ', address: 'x' }),
+    ).rejects.toThrow('Home name is required')
+  })
+  it('rejects duplicate home names and user emails', async () => {
+    await expect(
+      api.addHome(admin, { name: 'oakview house', address: 'x' }),
+    ).rejects.toThrow('already exists')
+    await expect(
+      api.saveUser(admin, {
+        fullName: 'Dup',
+        email: 'SAM@example.test',
+        role: 'support_worker',
+        homeIds: ['h1'],
+      }),
+    ).rejects.toThrow('already exists')
+  })
+  it('validates user email and home assignment', async () => {
+    await expect(
+      api.saveUser(admin, {
+        fullName: 'A',
+        email: 'nope',
+        role: 'admin',
+        homeIds: [],
+      }),
+    ).rejects.toThrow('valid email')
+    await expect(
+      api.saveUser(admin, {
+        fullName: 'A',
+        email: 'a@b.test',
+        role: 'support_worker',
+        homeIds: [],
+      }),
+    ).rejects.toThrow('at least one home')
+  })
+  it('rejects training that expires before it was completed', async () => {
+    await expect(
+      api.addTrainingRecord(manager, {
+        staffId: 's2',
+        course: 'CPR',
+        completedOn: '2026-05-01',
+        expiresOn: '2026-04-01',
+      }),
+    ).rejects.toThrow('Expiry date')
+  })
+  it('rejects bad unit capacity and future birth dates', async () => {
+    await expect(
+      api.addUnit(manager, { homeId: 'h1', name: 'Wing', capacity: 0 }),
+    ).rejects.toThrow('at least 1')
+    await expect(
+      api.saveYoungPerson(manager, {
+        homeId: 'h1',
+        fullName: 'Test Person',
+        dateOfBirth: '2999-01-01',
+        restricted: false,
+      }),
+    ).rejects.toThrow('future')
+  })
+})
