@@ -4,7 +4,7 @@ export function FormError({ error }: { error: Error | null }) {
   return (
     <p
       role="alert"
-      className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800"
+      className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950/60 dark:text-red-200"
     >
       {error.message || 'Something went wrong. Please try again.'}
     </p>

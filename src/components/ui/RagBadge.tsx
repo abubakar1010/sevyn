@@ -3,9 +3,23 @@ import { cn } from '@/lib/cn'
 
 // Never colour alone: each status has a distinct icon and a text label.
 const CONFIG: Record<Rag, { label: string; icon: string; style: string }> = {
-  red: { label: 'Red', icon: '✕', style: 'bg-red-100 text-red-900' },
-  amber: { label: 'Amber', icon: '!', style: 'bg-amber-100 text-amber-900' },
-  green: { label: 'Green', icon: '✓', style: 'bg-green-100 text-green-900' },
+  red: {
+    label: 'Red',
+    icon: '✕',
+    style: 'bg-red-100 text-red-900 dark:bg-red-500/20 dark:text-red-200',
+  },
+  amber: {
+    label: 'Amber',
+    icon: '!',
+    style:
+      'bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-200',
+  },
+  green: {
+    label: 'Green',
+    icon: '✓',
+    style:
+      'bg-green-100 text-green-900 dark:bg-green-500/20 dark:text-green-200',
+  },
 }
 
 export function RagBadge({ status, label }: { status: Rag; label?: string }) {

@@ -13,7 +13,7 @@ interface TableProps extends HTMLAttributes<HTMLTableElement> {
 
 export function Table({ className, stack = true, ...props }: TableProps) {
   return (
-    <div className="relative overflow-x-auto rounded-card border border-line bg-surface shadow-card [&_tbody_tr:last-child_td]:border-b-0 md:[&_tbody_tr:hover_td]:bg-primary-50/50">
+    <div className="relative overflow-x-auto rounded-card border border-line bg-surface shadow-card [&_tbody_tr:last-child_td]:border-b-0 md:[&_tbody_tr:hover_td]:bg-primary-50/50 dark:md:[&_tbody_tr:hover_td]:bg-white/5">
       <table
         className={cn(
           'w-full text-left text-sm',

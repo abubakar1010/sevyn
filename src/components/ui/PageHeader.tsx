@@ -16,7 +16,7 @@ export function PageHeader({
           aria-hidden
           className="absolute top-1 bottom-1 left-0 w-1 rounded-full bg-linear-to-b from-primary-500 to-accent-500"
         />
-        <h1 className="text-3xl font-semibold tracking-tight text-primary-950">
+        <h1 className="text-3xl font-semibold tracking-tight text-primary-950 dark:text-white">
           {title}
         </h1>
         {description && (

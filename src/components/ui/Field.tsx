@@ -8,7 +8,7 @@ import {
 import { cn } from '@/lib/cn'
 
 const CONTROL =
-  'block w-full rounded-lg border border-slate-300 bg-white px-3 text-base text-slate-900 placeholder:text-slate-400 disabled:bg-slate-100 aria-[invalid=true]:border-red-600'
+  'block w-full rounded-lg border border-slate-300 bg-surface px-3 text-base text-slate-900 placeholder:text-slate-400 disabled:bg-slate-100 aria-[invalid=true]:border-red-600'
 
 interface FieldProps {
   label: string
@@ -38,7 +38,10 @@ export function Field({ label, hint, error, children }: FieldProps) {
       {(error || hint) && (
         <p
           id={describedBy}
-          className={cn('text-sm', error ? 'text-red-700' : 'text-slate-600')}
+          className={cn(
+            'text-sm',
+            error ? 'text-red-700 dark:text-red-300' : 'text-slate-600',
+          )}
         >
           {error ?? hint}
         </p>

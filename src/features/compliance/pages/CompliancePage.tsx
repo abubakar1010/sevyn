@@ -132,7 +132,7 @@ export function CompliancePage() {
                   {i.interimMeasure ? (
                     i.interimMeasure.note
                   ) : i.status === 'red' ? (
-                    <span className="font-medium text-red-700">
+                    <span className="font-medium text-red-700 dark:text-red-300">
                       Note required
                     </span>
                   ) : (

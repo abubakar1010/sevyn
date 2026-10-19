@@ -4,11 +4,11 @@ import { useCountUp } from '@/lib/useCountUp'
 import type { Rag } from '@/types'
 
 const TILE: Record<Rag, string> = {
-  red: 'border-red-200 bg-linear-to-br from-red-50 to-white text-red-900',
+  red: 'border-red-200 bg-linear-to-br from-red-50 to-white text-red-900 dark:border-red-900 dark:from-red-950/70 dark:to-surface dark:text-red-100',
   amber:
-    'border-amber-200 bg-linear-to-br from-amber-50 to-white text-amber-900',
+    'border-amber-200 bg-linear-to-br from-amber-50 to-white text-amber-900 dark:border-amber-900 dark:from-amber-950/70 dark:to-surface dark:text-amber-100',
   green:
-    'border-green-200 bg-linear-to-br from-green-50 to-white text-green-900',
+    'border-green-200 bg-linear-to-br from-green-50 to-white text-green-900 dark:border-green-900 dark:from-green-950/70 dark:to-surface dark:text-green-100',
 }
 
 export function StatTile({ status, count }: { status: Rag; count: number }) {

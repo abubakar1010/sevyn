@@ -58,7 +58,7 @@ export function Logo({
       <span
         className={cn(
           'font-display text-2xl leading-none font-semibold tracking-tight',
-          light ? 'text-white' : 'text-primary-900',
+          light ? 'text-white' : 'text-primary-900 dark:text-white',
         )}
       >
         Sevyn
