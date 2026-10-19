@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/Button'
+import { FormError } from '@/components/ui/FormError'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { Modal } from '@/components/ui/Modal'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -135,6 +136,7 @@ export function TrainingPage() {
           <Field label="Expires on" hint="Leave blank if it does not expire">
             {(p) => <Input name="expiresOn" type="date" {...p} />}
           </Field>
+          <FormError error={add.error} />
           <Button type="submit" disabled={add.isPending}>
             Save record
           </Button>

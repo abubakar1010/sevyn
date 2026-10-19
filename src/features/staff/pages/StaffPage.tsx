@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/Button'
+import { FormError } from '@/components/ui/FormError'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { Modal } from '@/components/ui/Modal'
@@ -180,6 +181,7 @@ export function StaffPage() {
                 />
               )}
             </Field>
+            <FormError error={save.error} />
             <Button type="submit" disabled={save.isPending}>
               Save
             </Button>

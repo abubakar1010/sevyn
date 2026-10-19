@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/Button'
+import { FormError } from '@/components/ui/FormError'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Field, Textarea } from '@/components/ui/Field'
@@ -135,6 +136,7 @@ export function InterimMeasuresPage() {
             >
               {(p) => <Textarea name="note" required minLength={5} {...p} />}
             </Field>
+            <FormError error={add.error} />
             <Button type="submit" disabled={add.isPending}>
               Save note
             </Button>

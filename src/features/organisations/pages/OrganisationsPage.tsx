@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/Button'
+import { FormError } from '@/components/ui/FormError'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Field, Input } from '@/components/ui/Field'
 import { Modal } from '@/components/ui/Modal'
@@ -75,6 +76,7 @@ export function OrganisationsPage() {
           >
             {(p) => <Input name="email" type="email" required {...p} />}
           </Field>
+          <FormError error={create.error} />
           <Button type="submit" disabled={create.isPending}>
             Create
           </Button>

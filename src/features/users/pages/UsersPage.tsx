@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useAuth } from '@/app/useAuth'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { FormError } from '@/components/ui/FormError'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { Modal } from '@/components/ui/Modal'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -197,6 +198,7 @@ export function UsersPage() {
                 ))}
               </fieldset>
             )}
+            <FormError error={save.error} />
             <Button type="submit" disabled={save.isPending}>
               Save
             </Button>

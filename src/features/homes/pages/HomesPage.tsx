@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '@/app/useAuth'
 import { Button } from '@/components/ui/Button'
+import { FormError } from '@/components/ui/FormError'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Field, Input } from '@/components/ui/Field'
@@ -147,6 +148,7 @@ export function HomesPage() {
           <Field label="Address">
             {(p) => <Input name="address" required {...p} />}
           </Field>
+          <FormError error={addHome.error} />
           <Button type="submit" disabled={addHome.isPending}>
             Save home
           </Button>
@@ -173,6 +175,7 @@ export function HomesPage() {
               />
             )}
           </Field>
+          <FormError error={addUnit.error} />
           <Button type="submit" disabled={addUnit.isPending}>
             Save unit
           </Button>

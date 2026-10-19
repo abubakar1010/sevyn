@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { FormError } from '@/components/ui/FormError'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Field, Select, Textarea } from '@/components/ui/Field'
@@ -137,6 +138,7 @@ export function QuickLogsPage() {
           <Field label="Observation">
             {(p) => <Textarea name="note" required {...p} />}
           </Field>
+          <FormError error={add.error} />
           <Button type="submit" disabled={add.isPending}>
             Save log
           </Button>

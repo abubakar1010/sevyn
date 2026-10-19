@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { FormError } from '@/components/ui/FormError'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Field, Input, Select } from '@/components/ui/Field'
@@ -150,6 +151,7 @@ export function TasksPage() {
               />
             )}
           </Field>
+          <FormError error={add.error} />
           <Button type="submit" disabled={add.isPending}>
             Create task
           </Button>

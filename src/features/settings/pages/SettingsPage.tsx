@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react'
 import { Button } from '@/components/ui/Button'
+import { FormError } from '@/components/ui/FormError'
 import { Card } from '@/components/ui/Card'
 import { Field, Input } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -66,17 +67,13 @@ export function SettingsPage() {
                 {(p) => <Input value="10 minutes" readOnly disabled {...p} />}
               </Field>
               <div className="flex items-center gap-3">
+                <FormError error={save.error} />
                 <Button type="submit" disabled={save.isPending}>
                   Save settings
                 </Button>
                 {save.isSuccess && (
                   <span role="status" className="text-sm text-slate-600">
                     Saved
-                  </span>
-                )}
-                {save.isError && (
-                  <span role="alert" className="text-sm text-red-700">
-                    {save.error.message}
                   </span>
                 )}
               </div>

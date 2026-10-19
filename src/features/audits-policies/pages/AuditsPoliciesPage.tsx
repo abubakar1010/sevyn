@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { FormError } from '@/components/ui/FormError'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
@@ -227,6 +228,7 @@ export function AuditsPoliciesPage() {
           >
             {(p) => <Textarea name="requiredAction" {...p} />}
           </Field>
+          <FormError error={addAudit.error} />
           <Button type="submit" disabled={addAudit.isPending}>
             Save audit
           </Button>
@@ -244,6 +246,7 @@ export function AuditsPoliciesPage() {
           <Field label="Next review due">
             {(p) => <Input name="reviewDue" type="date" required {...p} />}
           </Field>
+          <FormError error={addPolicy.error} />
           <Button type="submit" disabled={addPolicy.isPending}>
             Save policy
           </Button>
