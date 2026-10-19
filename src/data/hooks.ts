@@ -87,3 +87,16 @@ export const useAddPolicy = () =>
   useWrite(api.addPolicy, ['policies', ...AUDIT])
 export const useMarkPolicyReviewed = () =>
   useWrite(api.markPolicyReviewed, ['policies', ...AUDIT])
+
+export const useUpdateTask = () => useWrite(api.updateTask, ['tasks', ...AUDIT])
+export const useDeleteTask = () => useWrite(api.deleteTask, ['tasks', ...AUDIT])
+export const useUpdateQuickLog = () =>
+  useWrite(api.updateQuickLog, ['quick-logs', ...AUDIT])
+export const useUpdateHome = () => useWrite(api.updateHome, ['homes', ...AUDIT])
+export const useDeleteUnit = () => useWrite(api.deleteUnit, ['units', ...AUDIT])
+export const useArchiveStaff = () =>
+  useWrite(api.archiveStaff, ['staff', 'training', 'interim', ...AUDIT])
+export const useArchiveYoungPerson = () =>
+  useWrite(api.archiveYoungPerson, ['young-people', 'quick-logs', ...AUDIT])
+export const useDeleteDocument = () =>
+  useWrite(api.deleteDocument, ['documents', ...AUDIT])

@@ -63,13 +63,15 @@ export const listUnits = (profile: Profile): Promise<Unit[]> =>
   delay(mock.units.filter((u) => canSee(profile, u.homeId)))
 
 export const listStaff = (profile: Profile): Promise<StaffMember[]> =>
-  delay(mock.staff.filter((s) => canSee(profile, s.homeId)))
+  delay(mock.staff.filter((s) => !s.archived && canSee(profile, s.homeId)))
 
 export const listTrainingRecords = (
   profile: Profile,
 ): Promise<TrainingRecord[]> => {
   const staffIds = new Set(
-    mock.staff.filter((s) => canSee(profile, s.homeId)).map((s) => s.id),
+    mock.staff
+      .filter((s) => !s.archived && canSee(profile, s.homeId))
+      .map((s) => s.id),
   )
   return delay(mock.trainingRecords.filter((t) => staffIds.has(t.staffId)))
 }
@@ -150,6 +152,7 @@ export const listYoungPeople = (profile: Profile): Promise<YoungPerson[]> =>
   delay(
     mock.youngPeople.filter(
       (y) =>
+        !y.archived &&
         canSee(profile, y.homeId) &&
         !(profile.role === 'support_worker' && y.restricted),
     ),
@@ -423,5 +426,99 @@ export async function markPolicyReviewed(
   found.lastReviewed = mock.daysFromNow(0)
   found.reviewDue = mock.daysFromNow(365)
   audit(profile, 'Reviewed policy', found.title)
+  return delay(true)
+}
+
+export async function updateTask(
+  profile: Profile,
+  input: Pick<Task, 'id' | 'title' | 'assigneeId' | 'dueDate'>,
+) {
+  const task = mock.tasks.find((t) => t.id === input.id)
+  if (!task) throw new Error('Task not found')
+  assertCanWrite(profile, task.homeId)
+  Object.assign(task, {
+    title: input.title,
+    assigneeId: input.assigneeId,
+    dueDate: input.dueDate,
+  })
+  audit(profile, 'Updated task', task.title, task.homeId)
+  return delay(true)
+}
+
+export async function deleteTask(profile: Profile, input: { id: string }) {
+  const idx = mock.tasks.findIndex((t) => t.id === input.id)
+  if (idx < 0) throw new Error('Task not found')
+  const task = mock.tasks[idx]
+  assertCanWrite(profile, task.homeId)
+  mock.tasks.splice(idx, 1)
+  audit(profile, 'Deleted task', task.title, task.homeId)
+  return delay(true)
+}
+
+/** Authors may correct their own logs; managers and admins may correct any log they can see. */
+export async function updateQuickLog(
+  profile: Profile,
+  input: Pick<QuickLog, 'id' | 'tags' | 'note'>,
+) {
+  const log = mock.quickLogs.find((l) => l.id === input.id)
+  if (!log || !canSee(profile, log.homeId)) throw new Error('Not permitted')
+  if (profile.role === 'support_worker' && log.authorId !== profile.id)
+    throw new Error('You can only edit your own logs')
+  if (!input.note.trim()) throw new Error('A note is required')
+  Object.assign(log, { tags: input.tags, note: input.note.trim() })
+  audit(profile, 'Edited quick log', log.youngPersonId, log.homeId)
+  return delay(true)
+}
+
+export async function updateHome(
+  profile: Profile,
+  input: Pick<Home, 'id' | 'name' | 'address'>,
+) {
+  if (profile.role !== 'admin') throw new Error('Only admins can edit homes')
+  const home = mock.homes.find((h) => h.id === input.id)
+  if (!home) throw new Error('Home not found')
+  Object.assign(home, { name: input.name, address: input.address })
+  audit(profile, 'Updated home', input.name, home.id)
+  return delay(true)
+}
+
+export async function deleteUnit(profile: Profile, input: { id: string }) {
+  const idx = mock.units.findIndex((u) => u.id === input.id)
+  if (idx < 0) throw new Error('Unit not found')
+  const unit = mock.units[idx]
+  assertCanWrite(profile, unit.homeId)
+  mock.units.splice(idx, 1)
+  audit(profile, 'Deleted unit', unit.name, unit.homeId)
+  return delay(true)
+}
+
+export async function archiveStaff(profile: Profile, input: { id: string }) {
+  const member = mock.staff.find((s) => s.id === input.id)
+  if (!member) throw new Error('Staff member not found')
+  assertCanWrite(profile, member.homeId)
+  member.archived = true
+  audit(profile, 'Archived staff member', member.fullName, member.homeId)
+  return delay(true)
+}
+
+export async function archiveYoungPerson(
+  profile: Profile,
+  input: { id: string },
+) {
+  const yp = mock.youngPeople.find((y) => y.id === input.id)
+  if (!yp) throw new Error('Record not found')
+  assertCanWrite(profile, yp.homeId)
+  yp.archived = true
+  audit(profile, 'Archived young person record', yp.initials, yp.homeId)
+  return delay(true)
+}
+
+export async function deleteDocument(profile: Profile, input: { id: string }) {
+  const idx = mock.documents.findIndex((d) => d.id === input.id)
+  if (idx < 0) throw new Error('Document not found')
+  const doc = mock.documents[idx]
+  assertCanWrite(profile, doc.homeId)
+  mock.documents.splice(idx, 1)
+  audit(profile, 'Deleted document', doc.title, doc.homeId)
   return delay(true)
 }

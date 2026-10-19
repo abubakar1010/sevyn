@@ -26,6 +26,8 @@ export interface StaffMember {
   address: string
   dbsRecheckDate: string | null
   safeguardingExpiry: string | null
+  /** Archived staff leave active lists and compliance, but are kept for the audit trail. */
+  archived?: boolean
 }
 
 export interface TrainingRecord {
@@ -51,6 +53,7 @@ export interface YoungPerson {
   fullName: string
   dateOfBirth: string
   restricted: boolean
+  archived?: boolean
 }
 
 export interface QuickLog {
