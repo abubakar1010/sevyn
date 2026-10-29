@@ -10,7 +10,7 @@ import { ROLE_LABEL } from '@/lib/roles'
 import type { Role } from '@/types'
 
 const ROLE_BLURB: Record<Role, string> = {
-  admin: 'Organisations, users and settings',
+  admin: 'Homes, users and settings',
   registered_manager: 'Homes, staff, young people and Ofsted Mode',
   support_worker: 'Daily logs, tasks and your home’s status',
 }

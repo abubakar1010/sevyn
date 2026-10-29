@@ -4,7 +4,6 @@ import type {
   Policy,
   AuditEntry,
   OrgSettings,
-  Organisation,
   DocumentCategory,
   DocumentRecord,
   Home,
@@ -331,31 +330,6 @@ export function listAuditLog(profile: Profile): Promise<AuditEntry[]> {
 
 function assertAdmin(profile: Profile) {
   if (profile.role !== 'admin') throw new Error('Admins only')
-}
-
-export function listOrganisations(profile: Profile): Promise<Organisation[]> {
-  assertAdmin(profile)
-  return delay([...mock.organisations])
-}
-
-/** Mirrors the documented SQL function that provisions a tenant. */
-export async function createOrganisation(
-  profile: Profile,
-  input: { name: string; firstAdminEmail: string },
-) {
-  requireText(input.name, 'Organisation name')
-  if (!/^\S+@\S+\.\S+$/.test(input.firstAdminEmail))
-    throw new Error('Enter a valid email address')
-  if (mock.organisations.some((o) => sameName(o.name, input.name)))
-    throw new Error('An organisation with this name already exists')
-  assertAdmin(profile)
-  mock.organisations.push({
-    id: newId(),
-    name: input.name,
-    createdAt: mock.daysFromNow(0),
-  })
-  audit(profile, 'Created organisation', input.name)
-  return delay(true)
 }
 
 export function listUsers(profile: Profile): Promise<AppUser[]> {

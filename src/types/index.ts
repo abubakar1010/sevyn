@@ -113,12 +113,6 @@ export interface AuditEntry {
   homeId?: string
 }
 
-export interface Organisation {
-  id: string
-  name: string
-  createdAt: string
-}
-
 export interface AppUser {
   id: string
   fullName: string

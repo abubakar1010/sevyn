@@ -7,7 +7,6 @@ import { AppLayout, type NavItem } from './AppLayout'
 import { RequireRole } from './RequireRole'
 import { DesignPage } from '@/features/design/DesignPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
-import { OrganisationsPage } from '@/features/organisations/pages/OrganisationsPage'
 import { UsersPage } from '@/features/users/pages/UsersPage'
 import { HomesPage } from '@/features/homes/pages/HomesPage'
 import { YoungPeoplePage } from '@/features/young-people/pages/YoungPeoplePage'
@@ -24,7 +23,6 @@ import { SettingsPage } from '@/features/settings/pages/SettingsPage'
 
 const adminNav: NavItem[] = [
   { to: '/admin', label: 'Compliance' },
-  { to: '/admin/organisations', label: 'Organisations' },
   { to: '/admin/users', label: 'Users' },
   { to: '/admin/homes', label: 'Homes' },
   { to: '/admin/staff', label: 'Staff' },
@@ -73,7 +71,6 @@ export const routes: RouteObject[] = [
         element: <AppLayout nav={adminNav} />,
         children: [
           { index: true, element: <CompliancePage /> },
-          { path: 'organisations', element: <OrganisationsPage /> },
           { path: 'users', element: <UsersPage /> },
           { path: 'homes', element: <HomesPage /> },
           { path: 'staff', element: <StaffPage /> },

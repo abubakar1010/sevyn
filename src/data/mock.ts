@@ -4,7 +4,6 @@ import type {
   Policy,
   AuditEntry,
   OrgSettings,
-  Organisation,
   DocumentRecord,
   Home,
   InterimMeasure,
@@ -270,10 +269,6 @@ export const auditLog: AuditEntry[] = [
     target: 'Safeguarding training — Jordan Lee',
     homeId: 'h1',
   },
-]
-
-export const organisations: Organisation[] = [
-  { id: 'demo-org', name: 'Demo Care Group', createdAt: daysFromNow(-120) },
 ]
 
 export const appUsers: AppUser[] = [

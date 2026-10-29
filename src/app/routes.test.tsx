@@ -12,7 +12,6 @@ const [admin, manager, worker] = demoUsers
 // Every role's routes must render their page heading with demo data and no runtime errors.
 const CASES: [Profile, string, string][] = [
   [admin, '/admin', 'Compliance dashboard'],
-  [admin, '/admin/organisations', 'Organisations'],
   [admin, '/admin/users', 'Users & roles'],
   [admin, '/admin/homes', 'Homes & units'],
   [admin, '/admin/staff', 'Staff'],

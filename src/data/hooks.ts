@@ -62,13 +62,9 @@ export const useSetTaskDone = () =>
 export const useAddDocument = () =>
   useWrite(api.addDocument, ['documents', ...AUDIT])
 
-export const useOrganisations = () =>
-  useScoped('organisations', api.listOrganisations)
 export const useUsers = () => useScoped('users', async (p) => api.listUsers(p))
 export const useSettings = () => useScoped('settings', () => api.getSettings())
 
-export const useCreateOrganisation = () =>
-  useWrite(api.createOrganisation, ['organisations', ...AUDIT])
 export const useSaveUser = () => useWrite(api.saveUser, ['users', ...AUDIT])
 export const useSetUserActive = () =>
   useWrite(api.setUserActive, ['users', ...AUDIT])
