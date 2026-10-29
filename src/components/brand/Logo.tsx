@@ -1,10 +1,8 @@
-import { useId } from 'react'
 import { cn } from '@/lib/cn'
 
-const DOTS = 7
-const RADIUS = 9
+const BRAND_BLUE = '#3f83f4'
 
-/** Seven dots in a ring (a nod to the name); the top dot leads. */
+/** The "S" mark: two interlocking hexagonal bands. */
 export function LogoMark({
   className,
   title,
@@ -12,35 +10,18 @@ export function LogoMark({
   className?: string
   title?: string
 }) {
-  const gradient = useId()
   return (
     <svg
-      viewBox="0 0 32 32"
-      className={cn('size-9', className)}
+      viewBox="0 0 308 357"
+      className={cn('h-8 w-auto', className)}
       role={title ? 'img' : undefined}
       aria-label={title}
       aria-hidden={title ? undefined : true}
     >
-      <defs>
-        <linearGradient id={gradient} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="var(--color-primary-500)" />
-          <stop offset="1" stopColor="var(--color-accent-700)" />
-        </linearGradient>
-      </defs>
-      <rect width="32" height="32" rx="9" fill={`url(#${gradient})`} />
-      {Array.from({ length: DOTS }, (_, i) => {
-        const angle = ((-90 + (i * 360) / DOTS) * Math.PI) / 180
-        return (
-          <circle
-            key={i}
-            cx={16 + RADIUS * Math.cos(angle)}
-            cy={16 + RADIUS * Math.sin(angle)}
-            r={i === 0 ? 2.7 : 1.9}
-            fill="white"
-            opacity={i === 0 ? 1 : 0.78}
-          />
-        )
-      })}
+      <g fill={BRAND_BLUE}>
+        <polygon points="50,0 257,0 308,89 103,89 154,178 50,178 0,89" />
+        <polygon points="154,178 257,178 308,268 257,357 50,357 0,268 204,268" />
+      </g>
     </svg>
   )
 }
@@ -57,8 +38,8 @@ export function Logo({
       <LogoMark />
       <span
         className={cn(
-          'font-display text-2xl leading-none font-semibold tracking-tight',
-          light ? 'text-white' : 'text-primary-900 dark:text-white',
+          'font-sans text-[1.75rem] leading-none font-bold tracking-tight',
+          light ? 'text-white' : 'text-[#111827] dark:text-white',
         )}
       >
         Sevyn
