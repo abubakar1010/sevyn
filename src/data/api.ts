@@ -163,6 +163,12 @@ const ITEM_LABELS: Record<string, string> = {
 /** Turns a compliance item key (e.g. `dbs:s6`) into a readable label and its home. */
 function describeItem(key: string): { target: string; homeId: string } | null {
   const [kind, id] = key.split(':')
+  if (kind === 'audit') {
+    const found = mock.audits.find((a) => a.id === id)
+    return found
+      ? { target: `${found.title} audit`, homeId: found.homeId }
+      : null
+  }
   if (kind === 'policy') {
     const policy = mock.policies.find((p) => p.id === id)
     return policy ? { target: `${policy.title} policy`, homeId: '' } : null
@@ -418,9 +424,19 @@ export const listAudits = (profile: Profile): Promise<Audit[]> =>
 
 export async function addAudit(
   profile: Profile,
-  input: Pick<Audit, 'homeId' | 'title' | 'auditDate' | 'requiredAction'>,
+  input: Pick<
+    Audit,
+    | 'homeId'
+    | 'title'
+    | 'auditDate'
+    | 'requiredAction'
+    | 'expiryDate'
+    | 'feedbackFileName'
+  >,
 ) {
   requireText(input.title, 'Audit title')
+  if (input.expiryDate && input.expiryDate < input.auditDate)
+    throw new Error('Next due date must be on or after the audit date')
   assertAdmin(profile)
   mock.audits.push({
     id: newId(),

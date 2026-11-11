@@ -151,6 +151,10 @@ export interface Audit {
   /** What must be done as a result of the audit. */
   requiredAction: string
   resolved: boolean
+  /** When the next audit is due (weekly, monthly, 6-monthly, yearly: the company decides). */
+  expiryDate: string | null
+  /** Scanned paper audit, or feedback from a local authority / Ofsted / internal audit. */
+  feedbackFileName?: string
 }
 
 export interface Policy {

@@ -11,12 +11,14 @@ import { QueryState } from '@/components/ui/QueryState'
 import { RagBadge } from '@/components/ui/RagBadge'
 import {
   useAddAudit,
+  useAmberDays,
   useAudits,
   useHomes,
   useSetAuditResolved,
 } from '@/data/hooks'
 import { daysFromNow } from '@/data/mock'
 import { formatDate } from '@/lib/format'
+import { ragForDate } from '@/lib/rag'
 import { useCanEdit } from '@/lib/useCanEdit'
 
 type Dialog = 'audit' | null
@@ -27,6 +29,7 @@ export function AuditsPage() {
   const homes = useHomes()
   const addAudit = useAddAudit()
   const resolve = useSetAuditResolved()
+  const amberDays = useAmberDays()
   const [dialog, setDialog] = useState<Dialog>(null)
 
   const today = daysFromNow(0)
@@ -41,6 +44,8 @@ export function AuditsPage() {
         title: String(f.get('title')).trim(),
         auditDate: String(f.get('auditDate')),
         requiredAction: String(f.get('requiredAction')).trim(),
+        expiryDate: String(f.get('expiryDate') || '') || null,
+        feedbackFileName: (f.get('feedback') as File | null)?.name || undefined,
       },
       { onSuccess: () => setDialog(null) },
     )
@@ -79,6 +84,25 @@ export function AuditsPage() {
                   <p className="text-sm text-slate-600">
                     {homeName(a.homeId)} · {formatDate(a.auditDate)}
                   </p>
+                  {a.expiryDate && (
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <RagBadge
+                        status={ragForDate(
+                          new Date(a.expiryDate),
+                          undefined,
+                          amberDays,
+                        )}
+                        label="Next due"
+                      />
+                      {formatDate(a.expiryDate)}
+                    </div>
+                  )}
+                  {a.feedbackFileName && (
+                    <p className="text-sm text-slate-600">
+                      Feedback attached:{' '}
+                      <span className="font-medium">{a.feedbackFileName}</span>
+                    </p>
+                  )}
                   {a.requiredAction && (
                     <p className="rounded-lg bg-slate-50 p-3 text-sm">
                       {a.requiredAction}
@@ -139,6 +163,18 @@ export function AuditsPage() {
             hint="Leave blank if no action is needed."
           >
             {(p) => <Textarea name="requiredAction" {...p} />}
+          </Field>
+          <Field
+            label="Next audit due"
+            hint="Optional. Drives the red / amber / green status, so weekly, monthly or yearly audits are all supported."
+          >
+            {(p) => <Input name="expiryDate" type="date" {...p} />}
+          </Field>
+          <Field
+            label="Audit feedback or scanned audit"
+            hint="Optional. Demo: only the file name is recorded; nothing is uploaded."
+          >
+            {(p) => <Input name="feedback" type="file" {...p} />}
           </Field>
           <FormError error={addAudit.error} />
           <Button type="submit" disabled={addAudit.isPending}>

@@ -365,6 +365,8 @@ export const audits: Audit[] = [
     auditDate: daysFromNow(-14),
     requiredAction: 'Update MAR chart sign-off process',
     resolved: false,
+    expiryDate: daysFromNow(16),
+    feedbackFileName: 'medication-audit-feedback.pdf',
   },
   {
     id: 'au2',
@@ -373,6 +375,7 @@ export const audits: Audit[] = [
     auditDate: daysFromNow(-40),
     requiredAction: 'Replace two faulty smoke alarms',
     resolved: true,
+    expiryDate: daysFromNow(-5),
   },
 ]
 

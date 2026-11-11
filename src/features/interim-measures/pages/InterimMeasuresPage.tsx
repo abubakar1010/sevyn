@@ -15,6 +15,7 @@ import {
   useStaff,
   useTrainingRecords,
   useAmberDays,
+  useAudits,
   usePolicies,
 } from '@/data/hooks'
 import { formatDate } from '@/lib/format'
@@ -29,19 +30,20 @@ export function InterimMeasuresPage() {
   const measures = useInterimMeasures()
   const amberDays = useAmberDays()
   const policies = usePolicies()
+  const audits = useAudits()
   const homes = useHomes()
   const add = useAddInterimMeasure()
   const [target, setTarget] = useState<ComplianceItem | null>(null)
 
   const allItems =
-    staff.data && training.data && measures.data && policies.data
+    staff.data && training.data && measures.data && policies.data && audits.data
       ? buildComplianceItems(
           staff.data,
           training.data,
           measures.data,
           undefined,
           amberDays,
-          policies.data,
+          { policies: policies.data, audits: audits.data },
         )
       : []
   const red = allItems.filter((i) => i.status === 'red')

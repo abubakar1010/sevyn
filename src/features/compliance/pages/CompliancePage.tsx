@@ -11,6 +11,7 @@ import {
   useTrainingRecords,
   useAmberDays,
   usePolicies,
+  useAudits,
 } from '@/data/hooks'
 import { formatDate } from '@/lib/format'
 import type { Rag } from '@/types'
@@ -28,13 +29,15 @@ export function CompliancePage() {
   const measures = useInterimMeasures()
   const amberDays = useAmberDays()
   const policies = usePolicies()
+  const audits = useAudits()
 
   if (
     homes.isPending ||
     staff.isPending ||
     training.isPending ||
     measures.isPending ||
-    policies.isPending
+    policies.isPending ||
+    audits.isPending
   ) {
     return <p role="status">Loading compliance…</p>
   }
@@ -43,7 +46,8 @@ export function CompliancePage() {
     !staff.data ||
     !training.data ||
     !measures.data ||
-    !policies.data
+    !policies.data ||
+    !audits.data
   ) {
     return <EmptyState title="Could not load compliance data" />
   }
@@ -54,7 +58,7 @@ export function CompliancePage() {
     measures.data,
     undefined,
     amberDays,
-    policies.data,
+    { policies: policies.data, audits: audits.data },
   )
   const counts = countByStatus(items)
   const total = counts.red + counts.amber + counts.green

@@ -1,4 +1,4 @@
-import type { InterimMeasure, StaffMember } from '@/types'
+import type { Audit, InterimMeasure, Policy, StaffMember } from '@/types'
 import { buildComplianceItems, countByStatus, homeStatus } from './compliance'
 
 const now = new Date('2026-01-01')
@@ -43,5 +43,51 @@ describe('compliance', () => {
   })
   it('counts by status', () => {
     expect(countByStatus(items)).toEqual({ red: 1, amber: 0, green: 3 })
+  })
+})
+
+describe('policy and audit items', () => {
+  const policies: Policy[] = [
+    {
+      id: 'p1',
+      title: 'Safeguarding',
+      lastReviewed: '2025-01-01',
+      reviewDue: '2025-12-01',
+      visibleToWorkers: true,
+    },
+  ]
+  const audits: Audit[] = [
+    {
+      id: 'a1',
+      homeId: 'h2',
+      title: 'Fridge check',
+      auditDate: '2025-12-30',
+      requiredAction: '',
+      resolved: true,
+      expiryDate: '2026-01-10',
+    },
+    {
+      id: 'a2',
+      homeId: 'h2',
+      title: 'One-off review',
+      auditDate: '2025-12-30',
+      requiredAction: '',
+      resolved: true,
+      expiryDate: null,
+    },
+  ]
+  const items = buildComplianceItems(staff, [], [], now, 30, {
+    policies,
+    audits,
+  })
+  it('turns an expired policy red at organisation level', () => {
+    const p = items.find((i) => i.key === 'policy:p1')!
+    expect(p.status).toBe('red')
+    expect(p.homeId).toBe('')
+  })
+  it('tracks audits that have a next-due date against their home', () => {
+    expect(items.find((i) => i.key === 'audit:a1')?.status).toBe('amber')
+    expect(items.some((i) => i.key === 'audit:a2')).toBe(false)
+    expect(homeStatus(items, 'h2')).toBe('amber')
   })
 })

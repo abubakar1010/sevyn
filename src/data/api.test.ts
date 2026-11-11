@@ -98,8 +98,30 @@ describe('audits and policies', () => {
         title: 'X',
         auditDate: '2026-01-01',
         requiredAction: '',
+        expiryDate: null,
       }),
     ).rejects.toThrow('Admins only')
+  })
+  it('rejects a next-due date before the audit date and stores feedback', async () => {
+    const base = {
+      homeId: 'h1',
+      title: 'Fridge check',
+      auditDate: '2026-02-01',
+      requiredAction: '',
+    }
+    await expect(
+      api.addAudit(admin, { ...base, expiryDate: '2026-01-01' }),
+    ).rejects.toThrow('Next due date')
+    await api.addAudit(admin, {
+      ...base,
+      expiryDate: '2026-02-08',
+      feedbackFileName: 'fridge.pdf',
+    })
+    const saved = (await api.listAudits(admin)).find(
+      (a) => a.title === 'Fridge check',
+    )
+    expect(saved?.expiryDate).toBe('2026-02-08')
+    expect(saved?.feedbackFileName).toBe('fridge.pdf')
   })
   it('hides unshared policies from support workers', async () => {
     const all = await api.listPolicies(manager)

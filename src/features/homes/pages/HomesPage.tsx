@@ -21,6 +21,7 @@ import {
   useUnits,
   useUpdateHome,
   useAmberDays,
+  useAudits,
 } from '@/data/hooks'
 import { useCanEdit } from '@/lib/useCanEdit'
 import type { Home, HomeInput, Unit } from '@/types'
@@ -83,6 +84,7 @@ export function HomesPage() {
   const training = useTrainingRecords()
   const measures = useInterimMeasures()
   const amberDays = useAmberDays()
+  const audits = useAudits()
   const addHome = useAddHome()
   const addUnit = useAddUnit()
   const updateHome = useUpdateHome()
@@ -102,6 +104,7 @@ export function HomesPage() {
           measures.data,
           undefined,
           amberDays,
+          { audits: audits.data },
         )
       : []
 
