@@ -55,6 +55,14 @@ export interface TrainingRecord {
   course: string
   completedOn: string
   expiresOn: string | null
+  /** Certificate evidencing the training. */
+  certificateFileName?: string
+}
+
+/** A training column on the matrix; companies add their own beyond the defaults. */
+export interface TrainingCourse {
+  id: string
+  name: string
 }
 
 export interface InterimMeasure {

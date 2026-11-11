@@ -12,6 +12,7 @@ import type {
   QuickLog,
   StaffMember,
   Task,
+  TrainingCourse,
   TrainingRecord,
   Unit,
   YoungPerson,
@@ -132,6 +133,26 @@ export async function saveStaff(
     input.fullName,
     input.homeId,
   )
+  return delay(true)
+}
+
+export const listTrainingCourses = (): Promise<TrainingCourse[]> =>
+  delay([...mock.trainingCourses])
+
+export async function addTrainingCourse(
+  profile: Profile,
+  input: { name: string },
+) {
+  requireText(input.name, 'Training name')
+  assertCanWrite(profile)
+  const name = input.name.trim()
+  if (
+    sameName(name, 'Safeguarding') ||
+    mock.trainingCourses.some((c) => sameName(c.name, name))
+  )
+    throw new Error('This training already exists')
+  mock.trainingCourses.push({ id: newId(), name })
+  audit(profile, 'Added training type', name)
   return delay(true)
 }
 

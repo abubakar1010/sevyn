@@ -10,6 +10,7 @@ import type {
   QuickLog,
   StaffMember,
   Task,
+  TrainingCourse,
   TrainingRecord,
   Unit,
   YoungPerson,
@@ -173,6 +174,7 @@ export const trainingRecords: TrainingRecord[] = [
     course: 'First Aid',
     completedOn: daysFromNow(-350),
     expiresOn: daysFromNow(15),
+    certificateFileName: 'first-aid-sam-taylor.pdf',
   },
   {
     id: 't2',
@@ -202,6 +204,12 @@ export const trainingRecords: TrainingRecord[] = [
     completedOn: daysFromNow(-30),
     expiresOn: daysFromNow(335),
   },
+]
+
+export const trainingCourses: TrainingCourse[] = [
+  { id: 'c1', name: 'First Aid' },
+  { id: 'c2', name: 'Fire Safety' },
+  { id: 'c3', name: 'Medication' },
 ]
 
 export const interimMeasures: InterimMeasure[] = [

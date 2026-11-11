@@ -35,6 +35,11 @@ export const useTrainingRecords = () =>
 export const useInterimMeasures = () =>
   useScoped('interim', () => api.listInterimMeasures())
 
+export const useTrainingCourses = () =>
+  useScoped('training-courses', () => api.listTrainingCourses())
+export const useAddTrainingCourse = () =>
+  useWrite(api.addTrainingCourse, ['training-courses', 'audit'])
+
 export const useAddHome = () => useWrite(api.addHome, ['homes', 'audit'])
 export const useAddUnit = () => useWrite(api.addUnit, ['units', 'audit'])
 export const useSaveStaff = () => useWrite(api.saveStaff, ['staff', 'audit'])

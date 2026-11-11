@@ -141,6 +141,21 @@ describe('audits and policies', () => {
   })
 })
 
+describe('training courses', () => {
+  it('lets a manager add a training and blocks duplicates', async () => {
+    await api.addTrainingCourse(manager, { name: 'Manual Handling' })
+    expect((await api.listTrainingCourses()).map((c) => c.name)).toContain(
+      'Manual Handling',
+    )
+    await expect(
+      api.addTrainingCourse(manager, { name: 'manual handling' }),
+    ).rejects.toThrow('already exists')
+    await expect(
+      api.addTrainingCourse(worker, { name: 'Anything' }),
+    ).rejects.toThrow('Not permitted')
+  })
+})
+
 describe('archive and delete', () => {
   it('archived staff disappear from lists and the change is audited', async () => {
     await api.archiveStaff(manager, { id: 's3' })
