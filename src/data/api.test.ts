@@ -156,6 +156,25 @@ describe('training courses', () => {
   })
 })
 
+describe('adding a policy', () => {
+  const base = {
+    title: 'Data protection',
+    lastReviewed: '2026-03-01',
+    reviewDue: '2027-03-01',
+    visibleToWorkers: false,
+  }
+  it('stores the date completed and rejects an earlier expiry', async () => {
+    await api.addPolicy(manager, base)
+    const saved = (await api.listPolicies(manager)).find(
+      (p) => p.title === 'Data protection',
+    )
+    expect(saved?.lastReviewed).toBe('2026-03-01')
+    await expect(
+      api.addPolicy(manager, { ...base, reviewDue: '2026-02-01' }),
+    ).rejects.toThrow('on or after')
+  })
+})
+
 describe('archive and delete', () => {
   it('archived staff disappear from lists and the change is audited', async () => {
     await api.archiveStaff(manager, { id: 's3' })

@@ -488,16 +488,18 @@ export const listPolicies = (profile: Profile): Promise<Policy[]> =>
 
 export async function addPolicy(
   profile: Profile,
-  input: Pick<Policy, 'title' | 'reviewDue' | 'fileName' | 'visibleToWorkers'>,
+  input: Pick<
+    Policy,
+    'title' | 'lastReviewed' | 'reviewDue' | 'fileName' | 'visibleToWorkers'
+  >,
 ) {
   requireText(input.title, 'Policy title')
   requireText(input.reviewDue, 'Expiry date')
+  requireText(input.lastReviewed, 'Date completed')
+  if (input.reviewDue < input.lastReviewed)
+    throw new Error('Expiry date must be on or after the date completed')
   assertCanWrite(profile)
-  mock.policies.push({
-    id: newId(),
-    lastReviewed: mock.daysFromNow(0),
-    ...input,
-  })
+  mock.policies.push({ id: newId(), ...input })
   audit(profile, 'Added policy', input.title)
   return delay(true)
 }

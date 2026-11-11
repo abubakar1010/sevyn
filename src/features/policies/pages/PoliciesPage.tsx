@@ -16,6 +16,7 @@ import {
   usePolicies,
   useSetPolicyVisibility,
 } from '@/data/hooks'
+import { daysFromNow } from '@/data/mock'
 import { formatDate } from '@/lib/format'
 import { ragForDate } from '@/lib/rag'
 import { useCanEdit } from '@/lib/useCanEdit'
@@ -38,6 +39,7 @@ export function PoliciesPage() {
     add.mutate(
       {
         title: String(f.get('title')).trim(),
+        lastReviewed: String(f.get('lastReviewed')),
         reviewDue: String(f.get('reviewDue')),
         fileName: file.name,
         visibleToWorkers: f.get('visibleToWorkers') === 'on',
@@ -162,6 +164,20 @@ export function PoliciesPage() {
             hint="Demo: only the file name is recorded; nothing is uploaded."
           >
             {(p) => <Input name="file" type="file" required {...p} />}
+          </Field>
+          <Field
+            label="Date completed"
+            hint="When this policy was written or last reviewed."
+          >
+            {(p) => (
+              <Input
+                name="lastReviewed"
+                type="date"
+                required
+                defaultValue={daysFromNow(0)}
+                {...p}
+              />
+            )}
           </Field>
           <Field
             label="Expiry date"
