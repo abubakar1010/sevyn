@@ -247,13 +247,13 @@ export async function listQuickLogs(profile: Profile): Promise<QuickLog[]> {
   return delay(
     mock.quickLogs
       .filter((l) => canSee(profile, l.homeId) && visible.has(l.youngPersonId))
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
+      .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt)),
   )
 }
 
 export async function addQuickLog(
   profile: Profile,
-  input: Pick<QuickLog, 'youngPersonId' | 'tags' | 'note'>,
+  input: Pick<QuickLog, 'youngPersonId' | 'tags' | 'note' | 'occurredAt'>,
 ) {
   const yp = (await listYoungPeople(profile)).find(
     (y) => y.id === input.youngPersonId,
@@ -543,14 +543,19 @@ export async function deleteTask(profile: Profile, input: { id: string }) {
 /** Authors may correct their own logs; managers and admins may correct any log they can see. */
 export async function updateQuickLog(
   profile: Profile,
-  input: Pick<QuickLog, 'id' | 'tags' | 'note'>,
+  input: Pick<QuickLog, 'id' | 'tags' | 'note'> &
+    Partial<Pick<QuickLog, 'occurredAt'>>,
 ) {
   const log = mock.quickLogs.find((l) => l.id === input.id)
   if (!log || !canSee(profile, log.homeId)) throw new Error('Not permitted')
   if (profile.role === 'support_worker' && log.authorId !== profile.id)
     throw new Error('You can only edit your own logs')
   if (!input.note.trim()) throw new Error('A note is required')
-  Object.assign(log, { tags: input.tags, note: input.note.trim() })
+  Object.assign(log, {
+    tags: input.tags,
+    note: input.note.trim(),
+    ...(input.occurredAt && { occurredAt: input.occurredAt }),
+  })
   audit(profile, 'Edited quick log', log.youngPersonId, log.homeId)
   return delay(true)
 }

@@ -106,7 +106,10 @@ export interface QuickLog {
   homeId: string
   youngPersonId: string
   authorId: string
+  /** When the entry was written into the system. */
   createdAt: string
+  /** When the event actually happened; may be earlier than `createdAt`. */
+  occurredAt: string
   tags: string[]
   note: string
 }

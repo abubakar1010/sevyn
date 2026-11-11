@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { FormError } from '@/components/ui/FormError'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Field, Select, Textarea } from '@/components/ui/Field'
+import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { Modal } from '@/components/ui/Modal'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { QueryState } from '@/components/ui/QueryState'
@@ -25,6 +25,12 @@ import { LOG_TAGS } from '../tags'
 
 type Editing = QuickLog | 'new' | null
 
+/** `datetime-local` inputs use local time without a zone, e.g. 2026-11-11T13:05. */
+const toLocalInput = (d: Date) =>
+  new Date(d.getTime() - d.getTimezoneOffset() * 60_000)
+    .toISOString()
+    .slice(0, 16)
+
 export function QuickLogsPage() {
   const { profile } = useAuth()
   const canEditAll = useCanEdit()
@@ -36,9 +42,20 @@ export function QuickLogsPage() {
   const update = useUpdateQuickLog()
   const [editing, setEditing] = useState<Editing>(null)
   const [filter, setFilter] = useState<string>('')
+  const [personFilter, setPersonFilter] = useState<string>('')
+  // Captured when the form opens so render stays pure.
+  const [openedAt, setOpenedAt] = useState('')
+  const startEditing = (value: Editing) => {
+    setOpenedAt(toLocalInput(new Date()))
+    setEditing(value)
+  }
 
   const shown =
-    logs.data?.filter((l) => !filter || l.tags.includes(filter)) ?? []
+    logs.data?.filter(
+      (l) =>
+        (!filter || l.tags.includes(filter)) &&
+        (!personFilter || l.youngPersonId === personFilter),
+    ) ?? []
 
   const current = editing && editing !== 'new' ? editing : null
 
@@ -47,11 +64,17 @@ export function QuickLogsPage() {
     const f = new FormData(e.currentTarget)
     const tags = f.getAll('tags').map(String)
     const note = String(f.get('note'))
+    const occurredAt = new Date(String(f.get('occurredAt'))).toISOString()
     const done = { onSuccess: () => setEditing(null) }
-    if (current) update.mutate({ id: current.id, tags, note }, done)
+    if (current) update.mutate({ id: current.id, tags, note, occurredAt }, done)
     else
       add.mutate(
-        { youngPersonId: String(f.get('youngPersonId')), tags, note },
+        {
+          youngPersonId: String(f.get('youngPersonId')),
+          tags,
+          note,
+          occurredAt,
+        },
         done,
       )
   }
@@ -61,10 +84,26 @@ export function QuickLogsPage() {
       <PageHeader
         title="Quick logs"
         description="Daily observations and updates, tagged by progress area."
-        actions={<Button onClick={() => setEditing('new')}>New log</Button>}
+        actions={<Button onClick={() => startEditing('new')}>New log</Button>}
       />
       <QueryState queries={[logs, people, staff]}>
-        <div className="mb-4 max-w-xs">
+        <div className="mb-4 grid max-w-xl gap-3 sm:grid-cols-2">
+          <Field label="Filter by young person">
+            {(p) => (
+              <Select
+                value={personFilter}
+                onChange={(e) => setPersonFilter(e.target.value)}
+                {...p}
+              >
+                <option value="">All young people</option>
+                {people.data?.map((y) => (
+                  <option key={y.id} value={y.id}>
+                    {youngPersonName(y, ofsted)}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </Field>
           <Field label="Filter by tag">
             {(p) => (
               <Select
@@ -98,7 +137,9 @@ export function QuickLogsPage() {
                     <p className="text-sm text-slate-600">
                       {staff.data?.find((s) => s.id === l.authorId)?.fullName ??
                         'Staff'}{' '}
-                      · {formatDateTime(l.createdAt)}
+                      · {formatDateTime(l.occurredAt)}
+                      {l.createdAt !== l.occurredAt &&
+                        ` (logged ${formatDateTime(l.createdAt)})`}
                     </p>
                   </div>
                   <p>{l.note}</p>
@@ -115,7 +156,7 @@ export function QuickLogsPage() {
                         variant="ghost"
                         size="sm"
                         aria-label={`Edit log for ${yp ? youngPersonName(yp, ofsted) : 'young person'}`}
-                        onClick={() => setEditing(l)}
+                        onClick={() => startEditing(l)}
                       >
                         Edit
                       </Button>
@@ -154,6 +195,25 @@ export function QuickLogsPage() {
                     </option>
                   ))}
                 </Select>
+              )}
+            </Field>
+            <Field
+              label="When it happened"
+              hint="Change this if you are writing the log up later."
+            >
+              {(p) => (
+                <Input
+                  name="occurredAt"
+                  type="datetime-local"
+                  required
+                  max={openedAt}
+                  defaultValue={
+                    current
+                      ? toLocalInput(new Date(current.occurredAt))
+                      : openedAt
+                  }
+                  {...p}
+                />
               )}
             </Field>
             <fieldset>
