@@ -7,6 +7,7 @@ import type {
   DocumentCategory,
   DocumentRecord,
   Home,
+  HomeInput,
   InterimMeasure,
   Profile,
   QuickLog,
@@ -86,12 +87,16 @@ export const listTrainingRecords = (
 export const listInterimMeasures = (): Promise<InterimMeasure[]> =>
   delay([...mock.interimMeasures])
 
-export async function addHome(
-  profile: Profile,
-  input: Pick<Home, 'name' | 'address'>,
-) {
+function validateHome(input: HomeInput) {
   requireText(input.name, 'Home name')
   requireText(input.address, 'Address')
+  requireText(input.ofstedUrn, 'Ofsted URN')
+  if (!Number.isInteger(input.approvedCapacity) || input.approvedCapacity < 1)
+    throw new Error('Approved capacity must be a whole number of at least 1')
+}
+
+export async function addHome(profile: Profile, input: HomeInput) {
+  validateHome(input)
   if (mock.homes.some((h) => sameName(h.name, input.name)))
     throw new Error('A home with this name already exists')
   if (profile.role !== 'admin') throw new Error('Only admins can create homes')
@@ -514,15 +519,15 @@ export async function updateQuickLog(
 
 export async function updateHome(
   profile: Profile,
-  input: Pick<Home, 'id' | 'name' | 'address'>,
+  input: HomeInput & { id: string },
 ) {
-  requireText(input.name, 'Home name')
+  validateHome(input)
   if (mock.homes.some((h) => h.id !== input.id && sameName(h.name, input.name)))
     throw new Error('A home with this name already exists')
   if (profile.role !== 'admin') throw new Error('Only admins can edit homes')
   const home = mock.homes.find((h) => h.id === input.id)
   if (!home) throw new Error('Home not found')
-  Object.assign(home, { name: input.name, address: input.address })
+  Object.assign(home, input)
   audit(profile, 'Updated home', input.name, home.id)
   return delay(true)
 }

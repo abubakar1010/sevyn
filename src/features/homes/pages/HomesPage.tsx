@@ -23,13 +23,56 @@ import {
   useAmberDays,
 } from '@/data/hooks'
 import { useCanEdit } from '@/lib/useCanEdit'
-import type { Home, Unit } from '@/types'
+import type { Home, HomeInput, Unit } from '@/types'
 import {
   buildComplianceItems,
   homeStatus,
 } from '@/features/compliance/compliance'
 
 type HomeEditing = Home | 'new' | null
+
+type TextKey = Exclude<keyof HomeInput, 'approvedCapacity'>
+interface HomeField {
+  name: TextKey
+  label: string
+  type?: string
+  required?: boolean
+}
+
+const HOME_FIELDS: HomeField[] = [
+  { name: 'name', label: 'Home name', required: true },
+  { name: 'address', label: 'Address', required: true },
+  { name: 'ofstedUrn', label: 'Ofsted URN', required: true },
+  { name: 'phone', label: 'Home direct telephone', type: 'tel' },
+  {
+    name: 'outOfHoursPhone',
+    label: 'Out-of-hours / on-call number',
+    type: 'tel',
+  },
+  { name: 'managerName', label: 'Registered manager name' },
+  { name: 'managerEmail', label: 'Registered manager email', type: 'email' },
+  {
+    name: 'managerPhone',
+    label: 'Registered manager direct phone',
+    type: 'tel',
+  },
+  { name: 'laContact', label: 'Local authority / LADO contact details' },
+  { name: 'ageRange', label: 'Age range (e.g. 16-18)' },
+  { name: 'genderPermitted', label: 'Gender permitted' },
+]
+
+const DETAIL_ROWS: [string, (h: Home) => string | number][] = [
+  ['Ofsted URN', (h) => h.ofstedUrn],
+  ['Approved capacity', (h) => h.approvedCapacity],
+  ['Home telephone', (h) => h.phone],
+  ['Out-of-hours number', (h) => h.outOfHoursPhone],
+  ['Registered manager', (h) => h.managerName],
+  ['Manager email', (h) => h.managerEmail],
+  ['Manager phone', (h) => h.managerPhone],
+  ['Local authority / LADO', (h) => h.laContact],
+  ['Age range', (h) => h.ageRange],
+  ['Gender permitted', (h) => h.genderPermitted],
+]
 
 export function HomesPage() {
   const { profile } = useAuth()
@@ -48,6 +91,8 @@ export function HomesPage() {
   const [unitDeleting, setUnitDeleting] = useState<Unit | null>(null)
   const currentHome = homeEditing && homeEditing !== 'new' ? homeEditing : null
   const [unitHome, setUnitHome] = useState<string | null>(null)
+  const [detailId, setDetailId] = useState<string | null>(null)
+  const detail = homes.data?.find((h) => h.id === detailId) ?? null
 
   const items =
     staff.data && training.data && measures.data
@@ -63,9 +108,12 @@ export function HomesPage() {
   function submitHome(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const f = new FormData(e.currentTarget)
+    const text = (k: string) => String(f.get(k) ?? '').trim()
     const fields = {
-      name: String(f.get('name')).trim(),
-      address: String(f.get('address')).trim(),
+      ...(Object.fromEntries(
+        HOME_FIELDS.map((x) => [x.name, text(x.name)]),
+      ) as Record<TextKey, string>),
+      approvedCapacity: Number(f.get('approvedCapacity')),
     }
     const done = { onSuccess: () => setHomeEditing(null) }
     if (currentHome) updateHome.mutate({ id: currentHome.id, ...fields }, done)
@@ -108,8 +156,19 @@ export function HomesPage() {
                 <Card key={h.id} className="flex flex-col gap-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <h2 className="text-lg font-semibold">{h.name}</h2>
+                      <h2 className="text-lg font-semibold">
+                        <button
+                          type="button"
+                          className="text-left hover:underline"
+                          onClick={() => setDetailId(h.id)}
+                        >
+                          {h.name}
+                        </button>
+                      </h2>
                       <p className="text-sm text-slate-600">{h.address}</p>
+                      <p className="text-sm text-slate-600">
+                        Ofsted URN {h.ofstedUrn} � {h.approvedCapacity} beds
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <RagBadge status={homeStatus(items, h.id)} />
@@ -179,26 +238,43 @@ export function HomesPage() {
             onSubmit={submitHome}
             className="flex flex-col gap-4"
           >
-            <Field label="Home name">
+            {HOME_FIELDS.slice(0, 3).map((x) => (
+              <Field key={x.name} label={x.label}>
+                {(p) => (
+                  <Input
+                    name={x.name}
+                    type={x.type}
+                    required={x.required}
+                    defaultValue={currentHome?.[x.name]}
+                    {...p}
+                  />
+                )}
+              </Field>
+            ))}
+            <Field label="Approved capacity / bed count">
               {(p) => (
                 <Input
-                  name="name"
+                  name="approvedCapacity"
+                  type="number"
+                  min={1}
                   required
-                  defaultValue={currentHome?.name}
+                  defaultValue={currentHome?.approvedCapacity ?? 1}
                   {...p}
                 />
               )}
             </Field>
-            <Field label="Address">
-              {(p) => (
-                <Input
-                  name="address"
-                  required
-                  defaultValue={currentHome?.address}
-                  {...p}
-                />
-              )}
-            </Field>
+            {HOME_FIELDS.slice(3).map((x) => (
+              <Field key={x.name} label={x.label}>
+                {(p) => (
+                  <Input
+                    name={x.name}
+                    type={x.type}
+                    defaultValue={currentHome?.[x.name]}
+                    {...p}
+                  />
+                )}
+              </Field>
+            ))}
             <FormError error={currentHome ? updateHome.error : addHome.error} />
             <Button
               type="submit"
@@ -207,6 +283,26 @@ export function HomesPage() {
               Save home
             </Button>
           </form>
+        )}
+      </Modal>
+      <Modal
+        open={detail !== null}
+        onClose={() => setDetailId(null)}
+        title={detail?.name ?? 'Home'}
+      >
+        {detail && (
+          <dl className="grid gap-3 text-sm sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <dt className="font-medium text-slate-800">Address</dt>
+              <dd className="text-slate-700">{detail.address}</dd>
+            </div>
+            {DETAIL_ROWS.map(([label, get]) => (
+              <div key={label}>
+                <dt className="font-medium text-slate-800">{label}</dt>
+                <dd className="text-slate-700">{get(detail) || '�'}</dd>
+              </div>
+            ))}
+          </dl>
         )}
       </Modal>
       <ConfirmDialog

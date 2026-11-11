@@ -1,7 +1,24 @@
 import { demoUsers } from './demoUsers'
 import * as api from './api'
+import type { HomeInput } from '@/types'
 
 const [admin, manager, worker] = demoUsers
+
+const homeInput = (over: Partial<HomeInput> = {}): HomeInput => ({
+  name: 'New Home',
+  address: '1 Test Street',
+  ofstedUrn: 'SC999999',
+  approvedCapacity: 3,
+  phone: '',
+  outOfHoursPhone: '',
+  managerName: '',
+  managerEmail: '',
+  managerPhone: '',
+  laContact: '',
+  ageRange: '',
+  genderPermitted: '',
+  ...over,
+})
 
 describe('write permissions', () => {
   it('blocks support workers from deleting tasks, documents and archiving staff', async () => {
@@ -22,7 +39,7 @@ describe('write permissions', () => {
   })
   it('only lets admins edit homes', async () => {
     await expect(
-      api.updateHome(manager, { id: 'h1', name: 'X', address: 'Y' }),
+      api.updateHome(manager, { id: 'h1', ...homeInput() }),
     ).rejects.toThrow('Only admins')
   })
 })
@@ -44,6 +61,30 @@ describe('quick log editing', () => {
     await expect(
       api.updateQuickLog(manager, { id: 'q1', tags: [], note: '   ' }),
     ).rejects.toThrow('note is required')
+  })
+})
+
+describe('home profile', () => {
+  it('requires an Ofsted URN and a positive capacity', async () => {
+    await expect(
+      api.addHome(admin, homeInput({ ofstedUrn: ' ' })),
+    ).rejects.toThrow('Ofsted URN is required')
+    await expect(
+      api.addHome(admin, homeInput({ approvedCapacity: 0 })),
+    ).rejects.toThrow('Approved capacity')
+  })
+  it('saves the full profile', async () => {
+    await api.updateHome(admin, {
+      id: 'h3',
+      ...homeInput({
+        name: 'Maple Court',
+        ofstedUrn: 'SC555555',
+        ageRange: '14-17',
+      }),
+    })
+    const h = (await api.listHomes(admin)).find((x) => x.id === 'h3')
+    expect(h?.ofstedUrn).toBe('SC555555')
+    expect(h?.ageRange).toBe('14-17')
   })
 })
 
@@ -96,13 +137,13 @@ describe('validation', () => {
         dueDate: '2026-12-01',
       }),
     ).rejects.toThrow('Title is required')
-    await expect(
-      api.addHome(admin, { name: ' ', address: 'x' }),
-    ).rejects.toThrow('Home name is required')
+    await expect(api.addHome(admin, homeInput({ name: ' ' }))).rejects.toThrow(
+      'Home name is required',
+    )
   })
   it('rejects duplicate home names and user emails', async () => {
     await expect(
-      api.addHome(admin, { name: 'oakview house', address: 'x' }),
+      api.addHome(admin, homeInput({ name: 'oakview house' })),
     ).rejects.toThrow('already exists')
     await expect(
       api.saveUser(admin, {

@@ -16,7 +16,22 @@ export interface Home {
   id: string
   name: string
   address: string
+  /** Ofsted unique reference number. */
+  ofstedUrn: string
+  approvedCapacity: number
+  phone: string
+  outOfHoursPhone: string
+  managerName: string
+  managerEmail: string
+  managerPhone: string
+  /** Local authority / LADO contact details. */
+  laContact: string
+  ageRange: string
+  genderPermitted: string
 }
+
+/** Editable home profile fields (everything except the id). */
+export type HomeInput = Omit<Home, 'id'>
 
 export interface StaffMember {
   id: string

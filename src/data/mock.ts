@@ -22,10 +22,56 @@ export function daysFromNow(n: number): string {
   return d.toISOString().slice(0, 10)
 }
 
+const homeProfile = (
+  n: number,
+  p: Pick<Home, 'ofstedUrn' | 'approvedCapacity' | 'ageRange'> &
+    Pick<Home, 'managerName' | 'genderPermitted'>,
+) => ({
+  ...p,
+  phone: `01234 50000${n}`,
+  outOfHoursPhone: `07700 90000${n}`,
+  managerEmail: `${p.managerName.split(' ')[0].toLowerCase()}@example.test`,
+  managerPhone: `07700 91000${n}`,
+  laContact: 'Demotown Council LADO, 01234 560000',
+})
+
 export const homes: Home[] = [
-  { id: 'h1', name: 'Oakview House', address: '12 Oak Lane, Demotown' },
-  { id: 'h2', name: 'Riverside Lodge', address: '4 River Road, Demotown' },
-  { id: 'h3', name: 'Maple Court', address: '9 Maple Court, Exampleton' },
+  {
+    id: 'h1',
+    name: 'Oakview House',
+    address: '12 Oak Lane, Demotown',
+    ...homeProfile(1, {
+      ofstedUrn: 'SC100001',
+      approvedCapacity: 5,
+      ageRange: '16-18',
+      managerName: 'Alex Morgan',
+      genderPermitted: 'Mixed',
+    }),
+  },
+  {
+    id: 'h2',
+    name: 'Riverside Lodge',
+    address: '4 River Road, Demotown',
+    ...homeProfile(2, {
+      ofstedUrn: 'SC100002',
+      approvedCapacity: 4,
+      ageRange: '16-17',
+      managerName: 'Casey Quinn',
+      genderPermitted: 'Female',
+    }),
+  },
+  {
+    id: 'h3',
+    name: 'Maple Court',
+    address: '9 Maple Court, Exampleton',
+    ...homeProfile(3, {
+      ofstedUrn: 'SC100003',
+      approvedCapacity: 3,
+      ageRange: '16-18',
+      managerName: 'Morgan Reid',
+      genderPermitted: 'Male',
+    }),
+  },
 ]
 
 export const staff: StaffMember[] = [
