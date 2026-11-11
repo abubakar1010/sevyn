@@ -83,6 +83,8 @@ export const staff: StaffMember[] = [
     address: '1 Sample St',
     dbsRecheckDate: daysFromNow(200),
     safeguardingExpiry: daysFromNow(150),
+    compliantToWork: true,
+    complianceNote: '',
   },
   {
     id: 's2',
@@ -92,6 +94,8 @@ export const staff: StaffMember[] = [
     address: '2 Sample St',
     dbsRecheckDate: daysFromNow(14),
     safeguardingExpiry: daysFromNow(90),
+    compliantToWork: true,
+    complianceNote: '',
   },
   {
     id: 's3',
@@ -101,6 +105,8 @@ export const staff: StaffMember[] = [
     address: '3 Sample St',
     dbsRecheckDate: daysFromNow(300),
     safeguardingExpiry: daysFromNow(-5),
+    compliantToWork: false,
+    complianceNote: 'Application form missing from staff file.',
   },
   {
     id: 's4',
@@ -110,6 +116,8 @@ export const staff: StaffMember[] = [
     address: '4 Sample St',
     dbsRecheckDate: daysFromNow(120),
     safeguardingExpiry: daysFromNow(60),
+    compliantToWork: true,
+    complianceNote: '',
   },
   {
     id: 's5',
@@ -119,6 +127,8 @@ export const staff: StaffMember[] = [
     address: '5 Sample St',
     dbsRecheckDate: daysFromNow(45),
     safeguardingExpiry: daysFromNow(20),
+    compliantToWork: true,
+    complianceNote: '',
   },
   {
     id: 's6',
@@ -128,6 +138,8 @@ export const staff: StaffMember[] = [
     address: '6 Sample St',
     dbsRecheckDate: null,
     safeguardingExpiry: daysFromNow(180),
+    compliantToWork: false,
+    complianceNote: 'Awaiting DBS and signed contract.',
   },
   {
     id: 's7',
@@ -137,6 +149,8 @@ export const staff: StaffMember[] = [
     address: '7 Sample St',
     dbsRecheckDate: daysFromNow(250),
     safeguardingExpiry: daysFromNow(220),
+    compliantToWork: true,
+    complianceNote: '',
   },
   {
     id: 's8',
@@ -146,6 +160,8 @@ export const staff: StaffMember[] = [
     address: '8 Sample St',
     dbsRecheckDate: daysFromNow(400),
     safeguardingExpiry: daysFromNow(300),
+    compliantToWork: true,
+    complianceNote: '',
   },
 ]
 

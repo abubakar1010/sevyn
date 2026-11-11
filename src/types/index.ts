@@ -41,6 +41,10 @@ export interface StaffMember {
   address: string
   dbsRecheckDate: string | null
   safeguardingExpiry: string | null
+  /** Set by the manager once every compliance requirement for this company is met. */
+  compliantToWork: boolean
+  /** What is missing when the staff member is not yet compliant. */
+  complianceNote: string
   /** Archived staff leave active lists and compliance, but are kept for the audit trail. */
   archived?: boolean
 }

@@ -11,6 +11,8 @@ const staff: StaffMember[] = [
     address: '',
     dbsRecheckDate: '2026-06-01',
     safeguardingExpiry: '2025-12-01',
+    compliantToWork: true,
+    complianceNote: '',
   },
   {
     id: 's2',
@@ -20,6 +22,8 @@ const staff: StaffMember[] = [
     address: '',
     dbsRecheckDate: '2026-06-01',
     safeguardingExpiry: '2026-06-01',
+    compliantToWork: true,
+    complianceNote: '',
   },
 ]
 const measure: InterimMeasure = {

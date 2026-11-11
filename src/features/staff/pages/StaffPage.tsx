@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { FormError } from '@/components/ui/FormError'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Field, Input, Select } from '@/components/ui/Field'
+import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { Modal } from '@/components/ui/Modal'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { QueryState } from '@/components/ui/QueryState'
@@ -13,6 +13,8 @@ import { useCanEdit } from '@/lib/useCanEdit'
 import { DateStatus } from '@/features/compliance/DateStatus'
 import { useOfstedMode } from '@/features/ofsted-mode/useOfstedMode'
 import type { StaffMember } from '@/types'
+import { DocumentsPanel } from '@/features/documents/DocumentsPanel'
+import { RagBadge } from '@/components/ui/RagBadge'
 
 type Editing = StaffMember | 'new' | null
 
@@ -25,6 +27,8 @@ export function StaffPage() {
   const archive = useArchiveStaff()
   const [archiving, setArchiving] = useState<StaffMember | null>(null)
   const [editing, setEditing] = useState<Editing>(null)
+  const [fileId, setFileId] = useState<string | null>(null)
+  const file = staff.data?.find((m) => m.id === fileId) ?? null
   const current = editing && editing !== 'new' ? editing : null
 
   function submit(e: FormEvent<HTMLFormElement>) {
@@ -40,6 +44,8 @@ export function StaffPage() {
         address: String(f.get('address')).trim(),
         dbsRecheckDate: date('dbs'),
         safeguardingExpiry: date('safeguarding'),
+        compliantToWork: f.get('compliantToWork') === 'yes',
+        complianceNote: String(f.get('complianceNote') ?? '').trim(),
       },
       { onSuccess: () => setEditing(null) },
     )
@@ -68,6 +74,7 @@ export function StaffPage() {
                 <Th>Home</Th>
                 <Th>DBS recheck</Th>
                 <Th>Safeguarding training</Th>
+                <Th>Compliant to work</Th>
                 <Th>Address</Th>
                 {canEdit && (
                   <Th>
@@ -80,7 +87,14 @@ export function StaffPage() {
               {staff.data?.map((s) => (
                 <tr key={s.id}>
                   <Td label="Name" className="font-medium">
-                    {s.fullName}
+                    <button
+                      type="button"
+                      className="text-left hover:underline"
+                      aria-label={`Open staff file for ${s.fullName}`}
+                      onClick={() => setFileId(s.id)}
+                    >
+                      {s.fullName}
+                    </button>
                   </Td>
                   <Td label="Role">{s.jobTitle}</Td>
                   <Td label="Home">
@@ -91,6 +105,19 @@ export function StaffPage() {
                   </Td>
                   <Td label="Safeguarding training">
                     <DateStatus date={s.safeguardingExpiry} />
+                  </Td>
+                  <Td label="Compliant to work">
+                    <div className="flex flex-col items-start gap-1">
+                      <RagBadge
+                        status={s.compliantToWork ? 'green' : 'red'}
+                        label={s.compliantToWork ? 'Yes' : 'No'}
+                      />
+                      {!s.compliantToWork && s.complianceNote && (
+                        <span className="max-w-48 text-xs whitespace-normal text-slate-600">
+                          {s.complianceNote}
+                        </span>
+                      )}
+                    </div>
                   </Td>
                   <Td label="Address">{ofsted ? '••••••••' : s.address}</Td>
                   {canEdit && (
@@ -192,11 +219,76 @@ export function StaffPage() {
                 />
               )}
             </Field>
+            <Field
+              label="Compliant to work"
+              hint="Yes once this staff member has everything your company requires on their file."
+            >
+              {(p) => (
+                <Select
+                  name="compliantToWork"
+                  defaultValue={current?.compliantToWork ? 'yes' : 'no'}
+                  {...p}
+                >
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </Select>
+              )}
+            </Field>
+            <Field label="Compliance note" hint="What is missing, if anything.">
+              {(p) => (
+                <Textarea
+                  name="complianceNote"
+                  defaultValue={current?.complianceNote}
+                  {...p}
+                />
+              )}
+            </Field>
             <FormError error={save.error} />
             <Button type="submit" disabled={save.isPending}>
               Save
             </Button>
           </form>
+        )}
+      </Modal>
+      <Modal
+        open={file !== null}
+        onClose={() => setFileId(null)}
+        title={file ? `Staff file: ${file.fullName}` : 'Staff file'}
+      >
+        {file && (
+          <>
+            <dl className="grid gap-3 text-sm sm:grid-cols-2">
+              <div>
+                <dt className="font-medium text-slate-800">Role</dt>
+                <dd className="text-slate-700">{file.jobTitle}</dd>
+              </div>
+              <div>
+                <dt className="font-medium text-slate-800">Home</dt>
+                <dd className="text-slate-700">
+                  {homes.data?.find((h) => h.id === file.homeId)?.name}
+                </dd>
+              </div>
+              <div>
+                <dt className="font-medium text-slate-800">DBS recheck</dt>
+                <dd>
+                  <DateStatus date={file.dbsRecheckDate} />
+                </dd>
+              </div>
+              <div>
+                <dt className="font-medium text-slate-800">
+                  Safeguarding training
+                </dt>
+                <dd>
+                  <DateStatus date={file.safeguardingExpiry} />
+                </dd>
+              </div>
+            </dl>
+            <DocumentsPanel
+              ownerType="staff"
+              ownerId={file.id}
+              homeId={file.homeId}
+            />
+          </>
         )}
       </Modal>
       <ConfirmDialog
