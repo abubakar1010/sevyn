@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { addInterimMeasure } from '@/data/api'
 import { demoUsers } from '@/data/demoUsers'
@@ -148,4 +149,16 @@ it('moves a measure to history once its item is no longer red', async () => {
     await screen.findByRole('heading', { name: 'Closed measures' }),
   ).toBeInTheDocument()
   expect(screen.getByText('Historic measure note')).toBeInTheDocument()
+})
+
+it('summarises who is ready to work and filters the staff list', async () => {
+  renderAt(manager, '/manager/staff')
+  expect(await screen.findByText(/staff ready to work/)).toBeInTheDocument()
+  expect(
+    screen.getByRole('button', { name: 'Open staff file for Jordan Lee' }),
+  ).toBeInTheDocument()
+  await userEvent.selectOptions(screen.getByLabelText('Show'), 'ready')
+  expect(
+    screen.queryByRole('button', { name: 'Open staff file for Jordan Lee' }),
+  ).not.toBeInTheDocument()
 })

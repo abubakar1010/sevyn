@@ -28,7 +28,15 @@ export function StaffPage() {
   const [archiving, setArchiving] = useState<StaffMember | null>(null)
   const [editing, setEditing] = useState<Editing>(null)
   const [fileId, setFileId] = useState<string | null>(null)
+  const [readiness, setReadiness] = useState<'all' | 'ready' | 'not'>('all')
   const file = staff.data?.find((m) => m.id === fileId) ?? null
+  const readyCount = staff.data?.filter((m) => m.compliantToWork).length ?? 0
+  const shown =
+    staff.data?.filter(
+      (m) =>
+        readiness === 'all' ||
+        (readiness === 'ready' ? m.compliantToWork : !m.compliantToWork),
+    ) ?? []
   const current = editing && editing !== 'new' ? editing : null
 
   function submit(e: FormEvent<HTMLFormElement>) {
@@ -66,84 +74,109 @@ export function StaffPage() {
         {staff.data?.length === 0 ? (
           <EmptyState title="No staff yet" />
         ) : (
-          <Table>
-            <thead>
-              <tr>
-                <Th>Name</Th>
-                <Th>Role</Th>
-                <Th>Home</Th>
-                <Th>DBS recheck</Th>
-                <Th>Safeguarding training</Th>
-                <Th>Compliant to work</Th>
-                <Th>Address</Th>
-                {canEdit && (
-                  <Th>
-                    <span className="sr-only">Actions</span>
-                  </Th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {staff.data?.map((s) => (
-                <tr key={s.id}>
-                  <Td label="Name" className="font-medium">
-                    <button
-                      type="button"
-                      className="text-left hover:underline"
-                      aria-label={`Open staff file for ${s.fullName}`}
-                      onClick={() => setFileId(s.id)}
+          <>
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <p role="status" className="text-sm text-slate-700">
+                <span className="font-semibold">{readyCount}</span> of{' '}
+                {staff.data?.length} staff ready to work
+              </p>
+              <div className="w-full max-w-48">
+                <Field label="Show">
+                  {(p) => (
+                    <Select
+                      value={readiness}
+                      onChange={(e) =>
+                        setReadiness(e.target.value as typeof readiness)
+                      }
+                      {...p}
                     >
-                      {s.fullName}
-                    </button>
-                  </Td>
-                  <Td label="Role">{s.jobTitle}</Td>
-                  <Td label="Home">
-                    {homes.data?.find((h) => h.id === s.homeId)?.name}
-                  </Td>
-                  <Td label="DBS recheck">
-                    <DateStatus date={s.dbsRecheckDate} />
-                  </Td>
-                  <Td label="Safeguarding training">
-                    <DateStatus date={s.safeguardingExpiry} />
-                  </Td>
-                  <Td label="Compliant to work">
-                    <div className="flex flex-col items-start gap-1">
-                      <RagBadge
-                        status={s.compliantToWork ? 'green' : 'red'}
-                        label={s.compliantToWork ? 'Yes' : 'No'}
-                      />
-                      {!s.compliantToWork && s.complianceNote && (
-                        <span className="max-w-48 text-xs whitespace-normal text-slate-600">
-                          {s.complianceNote}
-                        </span>
-                      )}
-                    </div>
-                  </Td>
-                  <Td label="Address">{ofsted ? '••••••••' : s.address}</Td>
+                      <option value="all">All staff</option>
+                      <option value="ready">Ready to work</option>
+                      <option value="not">Not ready</option>
+                    </Select>
+                  )}
+                </Field>
+              </div>
+            </div>
+            <Table>
+              <thead>
+                <tr>
+                  <Th>Name</Th>
+                  <Th>Role</Th>
+                  <Th>Home</Th>
+                  <Th>DBS recheck</Th>
+                  <Th>Safeguarding training</Th>
+                  <Th>Compliant to work</Th>
+                  <Th>Address</Th>
                   {canEdit && (
-                    <Td>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        aria-label={`Edit ${s.fullName}`}
-                        onClick={() => setEditing(s)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        aria-label={`Archive ${s.fullName}`}
-                        onClick={() => setArchiving(s)}
-                      >
-                        Archive
-                      </Button>
-                    </Td>
+                    <Th>
+                      <span className="sr-only">Actions</span>
+                    </Th>
                   )}
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {shown.map((s) => (
+                  <tr key={s.id}>
+                    <Td label="Name" className="font-medium">
+                      <button
+                        type="button"
+                        className="text-left hover:underline"
+                        aria-label={`Open staff file for ${s.fullName}`}
+                        onClick={() => setFileId(s.id)}
+                      >
+                        {s.fullName}
+                      </button>
+                    </Td>
+                    <Td label="Role">{s.jobTitle}</Td>
+                    <Td label="Home">
+                      {homes.data?.find((h) => h.id === s.homeId)?.name}
+                    </Td>
+                    <Td label="DBS recheck">
+                      <DateStatus date={s.dbsRecheckDate} />
+                    </Td>
+                    <Td label="Safeguarding training">
+                      <DateStatus date={s.safeguardingExpiry} />
+                    </Td>
+                    <Td label="Compliant to work">
+                      <div className="flex flex-col items-start gap-1">
+                        <RagBadge
+                          status={s.compliantToWork ? 'green' : 'red'}
+                          label={s.compliantToWork ? 'Yes' : 'No'}
+                        />
+                        {!s.compliantToWork && s.complianceNote && (
+                          <span className="max-w-48 text-xs whitespace-normal text-slate-600">
+                            {s.complianceNote}
+                          </span>
+                        )}
+                      </div>
+                    </Td>
+                    <Td label="Address">{ofsted ? '••••••••' : s.address}</Td>
+                    {canEdit && (
+                      <Td>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          aria-label={`Edit ${s.fullName}`}
+                          onClick={() => setEditing(s)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          aria-label={`Archive ${s.fullName}`}
+                          onClick={() => setArchiving(s)}
+                        >
+                          Archive
+                        </Button>
+                      </Td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </>
         )}
       </QueryState>
 
