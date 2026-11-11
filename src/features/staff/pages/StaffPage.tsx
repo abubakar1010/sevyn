@@ -63,7 +63,7 @@ export function StaffPage() {
     <>
       <PageHeader
         title="Staff"
-        description="Staff profiles with DBS recheck and safeguarding training status."
+        description="Staff files, DBS and safeguarding status, and who is ready to work."
         actions={
           canEdit && (
             <Button onClick={() => setEditing('new')}>Add staff member</Button>
