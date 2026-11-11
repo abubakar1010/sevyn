@@ -14,10 +14,10 @@ import { StaffPage } from '@/features/staff/pages/StaffPage'
 import { QuickLogsPage } from '@/features/quick-logs/pages/QuickLogsPage'
 import { TasksPage } from '@/features/tasks/pages/TasksPage'
 import { CompliancePage } from '@/features/compliance/pages/CompliancePage'
-import { AuditsPoliciesPage } from '@/features/audits-policies/pages/AuditsPoliciesPage'
+import { AuditsPage } from '@/features/audits/pages/AuditsPage'
 import { TrainingPage } from '@/features/training/pages/TrainingPage'
 import { InterimMeasuresPage } from '@/features/interim-measures/pages/InterimMeasuresPage'
-import { DocumentsPage } from '@/features/documents/pages/DocumentsPage'
+import { PoliciesPage } from '@/features/policies/pages/PoliciesPage'
 import { AuditLogPage } from '@/features/audit-log/pages/AuditLogPage'
 import { SettingsPage } from '@/features/settings/pages/SettingsPage'
 
@@ -28,7 +28,8 @@ const adminNav: NavItem[] = [
   { to: '/admin/staff', label: 'Staff' },
   { to: '/admin/training', label: 'Training' },
   { to: '/admin/interim-measures', label: 'Interim measures' },
-  { to: '/admin/documents', label: 'Documents' },
+  { to: '/admin/audits', label: 'Audits' },
+  { to: '/admin/policies', label: 'Policies' },
   { to: '/admin/audit-log', label: 'Audit log' },
   { to: '/admin/settings', label: 'Settings' },
 ]
@@ -39,11 +40,10 @@ const managerNav: NavItem[] = [
   { to: '/manager/young-people', label: 'Young people' },
   { to: '/manager/quick-logs', label: 'Quick logs' },
   { to: '/manager/tasks', label: 'Tasks' },
-  { to: '/manager/audits-policies', label: 'Audits & policies' },
   { to: '/manager/training', label: 'Training' },
   { to: '/manager/staff', label: 'Staff' },
   { to: '/manager/interim-measures', label: 'Interim measures' },
-  { to: '/manager/documents', label: 'Documents' },
+  { to: '/manager/policies', label: 'Policies' },
   { to: '/manager/audit-log', label: 'Audit log' },
 ]
 
@@ -52,7 +52,7 @@ const workerNav: NavItem[] = [
   { to: '/worker/young-people', label: 'Young people' },
   { to: '/worker/quick-logs', label: 'Quick logs' },
   { to: '/worker/tasks', label: 'Tasks' },
-  { to: '/worker/documents', label: 'Documents' },
+  { to: '/worker/policies', label: 'Policies' },
   { to: '/worker/interim-measures', label: 'Interim measures' },
   { to: '/worker/training', label: 'Training' },
 ]
@@ -76,7 +76,8 @@ export const routes: RouteObject[] = [
           { path: 'staff', element: <StaffPage /> },
           { path: 'training', element: <TrainingPage /> },
           { path: 'interim-measures', element: <InterimMeasuresPage /> },
-          { path: 'documents', element: <DocumentsPage /> },
+          { path: 'audits', element: <AuditsPage /> },
+          { path: 'policies', element: <PoliciesPage /> },
           { path: 'audit-log', element: <AuditLogPage /> },
           { path: 'settings', element: <SettingsPage /> },
         ],
@@ -95,11 +96,10 @@ export const routes: RouteObject[] = [
           { path: 'young-people', element: <YoungPeoplePage /> },
           { path: 'quick-logs', element: <QuickLogsPage /> },
           { path: 'tasks', element: <TasksPage /> },
-          { path: 'audits-policies', element: <AuditsPoliciesPage /> },
           { path: 'training', element: <TrainingPage /> },
           { path: 'staff', element: <StaffPage /> },
           { path: 'interim-measures', element: <InterimMeasuresPage /> },
-          { path: 'documents', element: <DocumentsPage /> },
+          { path: 'policies', element: <PoliciesPage /> },
           { path: 'audit-log', element: <AuditLogPage /> },
         ],
       },
@@ -116,7 +116,7 @@ export const routes: RouteObject[] = [
           { path: 'young-people', element: <YoungPeoplePage /> },
           { path: 'quick-logs', element: <QuickLogsPage /> },
           { path: 'tasks', element: <TasksPage /> },
-          { path: 'documents', element: <DocumentsPage /> },
+          { path: 'policies', element: <PoliciesPage /> },
           { path: 'interim-measures', element: <InterimMeasuresPage /> },
           { path: 'training', element: <TrainingPage /> },
         ],

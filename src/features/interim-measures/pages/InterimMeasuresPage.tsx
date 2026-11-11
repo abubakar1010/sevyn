@@ -15,6 +15,7 @@ import {
   useStaff,
   useTrainingRecords,
   useAmberDays,
+  usePolicies,
 } from '@/data/hooks'
 import { formatDate } from '@/lib/format'
 import { useCanEdit } from '@/lib/useCanEdit'
@@ -27,18 +28,20 @@ export function InterimMeasuresPage() {
   const training = useTrainingRecords()
   const measures = useInterimMeasures()
   const amberDays = useAmberDays()
+  const policies = usePolicies()
   const homes = useHomes()
   const add = useAddInterimMeasure()
   const [target, setTarget] = useState<ComplianceItem | null>(null)
 
   const allItems =
-    staff.data && training.data && measures.data
+    staff.data && training.data && measures.data && policies.data
       ? buildComplianceItems(
           staff.data,
           training.data,
           measures.data,
           undefined,
           amberDays,
+          policies.data,
         )
       : []
   const red = allItems.filter((i) => i.status === 'red')
@@ -87,7 +90,8 @@ export function InterimMeasuresPage() {
                         {i.label} — {i.subject}
                       </p>
                       <p className="text-sm text-slate-600">
-                        {homeName(i.homeId)} · due {formatDate(i.due)}
+                        {homeName(i.homeId) ?? 'Organisation'} · due{' '}
+                        {formatDate(i.due)}
                       </p>
                     </div>
                     <Button size="sm" onClick={() => setTarget(i)}>
@@ -114,7 +118,7 @@ export function InterimMeasuresPage() {
                   <RagBadge status="red" />
                 </div>
                 <p className="text-sm text-slate-600">
-                  {homeName(i.homeId)} · added{' '}
+                  {homeName(i.homeId) ?? 'Organisation'} · added{' '}
                   {formatDate(i.interimMeasure!.createdAt)}
                 </p>
                 <p className="rounded-lg bg-slate-50 p-3 text-sm">

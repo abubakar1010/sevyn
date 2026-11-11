@@ -10,6 +10,7 @@ import {
   useStaff,
   useTrainingRecords,
   useAmberDays,
+  usePolicies,
 } from '@/data/hooks'
 import { formatDate } from '@/lib/format'
 import type { Rag } from '@/types'
@@ -26,16 +27,24 @@ export function CompliancePage() {
   const training = useTrainingRecords()
   const measures = useInterimMeasures()
   const amberDays = useAmberDays()
+  const policies = usePolicies()
 
   if (
     homes.isPending ||
     staff.isPending ||
     training.isPending ||
-    measures.isPending
+    measures.isPending ||
+    policies.isPending
   ) {
     return <p role="status">Loading compliance…</p>
   }
-  if (!homes.data || !staff.data || !training.data || !measures.data) {
+  if (
+    !homes.data ||
+    !staff.data ||
+    !training.data ||
+    !measures.data ||
+    !policies.data
+  ) {
     return <EmptyState title="Could not load compliance data" />
   }
 
@@ -45,6 +54,7 @@ export function CompliancePage() {
     measures.data,
     undefined,
     amberDays,
+    policies.data,
   )
   const counts = countByStatus(items)
   const total = counts.red + counts.amber + counts.green
@@ -57,7 +67,7 @@ export function CompliancePage() {
     <div className="stagger">
       <PageHeader
         title="Compliance dashboard"
-        description="Live status from staff DBS, safeguarding and training dates."
+        description="Live status from staff DBS, safeguarding, training and policy dates."
       />
       <ScoreHero
         firstName={profile?.fullName.split(' ')[0] ?? ''}
@@ -122,7 +132,8 @@ export function CompliancePage() {
                 <Td label="Item">{i.label}</Td>
                 <Td label="Person">{i.subject}</Td>
                 <Td label="Home">
-                  {homes.data.find((h) => h.id === i.homeId)?.name}
+                  {homes.data.find((h) => h.id === i.homeId)?.name ??
+                    'Organisation'}
                 </Td>
                 <Td label="Due">{formatDate(i.due)}</Td>
                 <Td

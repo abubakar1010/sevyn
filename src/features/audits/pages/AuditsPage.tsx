@@ -9,34 +9,24 @@ import { Modal } from '@/components/ui/Modal'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { QueryState } from '@/components/ui/QueryState'
 import { RagBadge } from '@/components/ui/RagBadge'
-import { Table, Td, Th } from '@/components/ui/Table'
 import {
   useAddAudit,
-  useAddPolicy,
-  useAmberDays,
   useAudits,
   useHomes,
-  useMarkPolicyReviewed,
-  usePolicies,
   useSetAuditResolved,
 } from '@/data/hooks'
 import { daysFromNow } from '@/data/mock'
 import { formatDate } from '@/lib/format'
-import { ragForDate } from '@/lib/rag'
 import { useCanEdit } from '@/lib/useCanEdit'
 
-type Dialog = 'audit' | 'policy' | null
+type Dialog = 'audit' | null
 
-export function AuditsPoliciesPage() {
+export function AuditsPage() {
   const canEdit = useCanEdit()
   const audits = useAudits()
-  const policies = usePolicies()
   const homes = useHomes()
-  const amberDays = useAmberDays()
   const addAudit = useAddAudit()
   const resolve = useSetAuditResolved()
-  const addPolicy = useAddPolicy()
-  const reviewed = useMarkPolicyReviewed()
   const [dialog, setDialog] = useState<Dialog>(null)
 
   const today = daysFromNow(0)
@@ -56,26 +46,14 @@ export function AuditsPoliciesPage() {
     )
   }
 
-  function submitPolicy(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const f = new FormData(e.currentTarget)
-    addPolicy.mutate(
-      {
-        title: String(f.get('title')).trim(),
-        reviewDue: String(f.get('reviewDue')),
-      },
-      { onSuccess: () => setDialog(null) },
-    )
-  }
-
   return (
     <>
       <PageHeader
-        title="Audits & Policies"
-        description="Record audits, track the actions they require, and keep policy reviews up to date."
+        title="Audits"
+        description="Record audits and track the actions they require."
       />
-      <QueryState queries={[audits, policies, homes]}>
-        <section className="mb-10">
+      <QueryState queries={[audits, homes]}>
+        <section>
           <div className="mb-3 flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold">Audits</h2>
             {canEdit && (
@@ -123,72 +101,6 @@ export function AuditsPoliciesPage() {
             </div>
           )}
         </section>
-
-        <section>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">Policy reviews</h2>
-            {canEdit && (
-              <Button size="sm" onClick={() => setDialog('policy')}>
-                Add policy
-              </Button>
-            )}
-          </div>
-          {policies.data?.length === 0 ? (
-            <EmptyState title="No policies" />
-          ) : (
-            <Table>
-              <thead>
-                <tr>
-                  <Th>Policy</Th>
-                  <Th>Last reviewed</Th>
-                  <Th>Next review</Th>
-                  {canEdit && (
-                    <Th>
-                      <span className="sr-only">Actions</span>
-                    </Th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {policies.data?.map((p) => (
-                  <tr key={p.id}>
-                    <Td label="Policy" className="font-medium">
-                      {p.title}
-                    </Td>
-                    <Td label="Last reviewed">{formatDate(p.lastReviewed)}</Td>
-                    <Td label="Next review">
-                      <div className="flex flex-col items-start gap-1">
-                        <RagBadge
-                          status={ragForDate(
-                            new Date(p.reviewDue),
-                            undefined,
-                            amberDays,
-                          )}
-                        />
-                        <span className="text-slate-600">
-                          {formatDate(p.reviewDue)}
-                        </span>
-                      </div>
-                    </Td>
-                    {canEdit && (
-                      <Td>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          aria-label={`Mark ${p.title} reviewed`}
-                          disabled={reviewed.isPending}
-                          onClick={() => reviewed.mutate({ id: p.id })}
-                        >
-                          Mark reviewed
-                        </Button>
-                      </Td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          )}
-        </section>
       </QueryState>
 
       <Modal
@@ -231,24 +143,6 @@ export function AuditsPoliciesPage() {
           <FormError error={addAudit.error} />
           <Button type="submit" disabled={addAudit.isPending}>
             Save audit
-          </Button>
-        </form>
-      </Modal>
-      <Modal
-        open={dialog === 'policy'}
-        onClose={() => setDialog(null)}
-        title="Add policy"
-      >
-        <form onSubmit={submitPolicy} className="flex flex-col gap-4">
-          <Field label="Policy title">
-            {(p) => <Input name="title" required {...p} />}
-          </Field>
-          <Field label="Next review due">
-            {(p) => <Input name="reviewDue" type="date" required {...p} />}
-          </Field>
-          <FormError error={addPolicy.error} />
-          <Button type="submit" disabled={addPolicy.isPending}>
-            Save policy
           </Button>
         </form>
       </Modal>

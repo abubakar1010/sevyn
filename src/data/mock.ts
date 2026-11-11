@@ -382,17 +382,23 @@ export const policies: Policy[] = [
     title: 'Safeguarding policy',
     lastReviewed: daysFromNow(-340),
     reviewDue: daysFromNow(25),
+    fileName: 'safeguarding-policy.pdf',
+    visibleToWorkers: true,
   },
   {
     id: 'p2',
     title: 'Behaviour support policy',
     lastReviewed: daysFromNow(-400),
     reviewDue: daysFromNow(-35),
+    fileName: 'behaviour-support.pdf',
+    visibleToWorkers: false,
   },
   {
     id: 'p3',
     title: 'Complaints procedure',
     lastReviewed: daysFromNow(-90),
     reviewDue: daysFromNow(275),
+    fileName: 'complaints-procedure.pdf',
+    visibleToWorkers: true,
   },
 ]

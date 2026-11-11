@@ -75,12 +75,14 @@ export const useSaveSettings = () =>
 export const useAmberDays = () => useSettings().data?.amberDays ?? 30
 
 export const useAudits = () => useScoped('audits', api.listAudits)
-export const usePolicies = () => useScoped('policies', () => api.listPolicies())
+export const usePolicies = () => useScoped('policies', api.listPolicies)
 export const useAddAudit = () => useWrite(api.addAudit, ['audits', ...AUDIT])
 export const useSetAuditResolved = () =>
   useWrite(api.setAuditResolved, ['audits', ...AUDIT])
 export const useAddPolicy = () =>
   useWrite(api.addPolicy, ['policies', ...AUDIT])
+export const useSetPolicyVisibility = () =>
+  useWrite(api.setPolicyVisibility, ['policies', ...AUDIT])
 export const useMarkPolicyReviewed = () =>
   useWrite(api.markPolicyReviewed, ['policies', ...AUDIT])
 

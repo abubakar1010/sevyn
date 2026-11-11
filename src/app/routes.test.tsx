@@ -17,7 +17,8 @@ const CASES: [Profile, string, string][] = [
   [admin, '/admin/staff', 'Staff'],
   [admin, '/admin/training', 'Training matrix'],
   [admin, '/admin/interim-measures', 'Interim measures'],
-  [admin, '/admin/documents', 'Documents & policies'],
+  [admin, '/admin/audits', 'Audits'],
+  [admin, '/admin/policies', 'Policies'],
   [admin, '/admin/audit-log', 'Audit log'],
   [admin, '/admin/settings', 'Settings'],
   [manager, '/manager', 'Compliance dashboard'],
@@ -25,17 +26,16 @@ const CASES: [Profile, string, string][] = [
   [manager, '/manager/young-people', 'Young people'],
   [manager, '/manager/quick-logs', 'Quick logs'],
   [manager, '/manager/tasks', 'Tasks'],
-  [manager, '/manager/audits-policies', 'Audits & Policies'],
   [manager, '/manager/training', 'Training matrix'],
   [manager, '/manager/staff', 'Staff'],
   [manager, '/manager/interim-measures', 'Interim measures'],
-  [manager, '/manager/documents', 'Documents & policies'],
+  [manager, '/manager/policies', 'Policies'],
   [manager, '/manager/audit-log', 'Audit log'],
   [worker, '/worker', 'Compliance dashboard'],
   [worker, '/worker/young-people', 'Young people'],
   [worker, '/worker/quick-logs', 'Quick logs'],
   [worker, '/worker/tasks', 'Tasks'],
-  [worker, '/worker/documents', 'Documents & policies'],
+  [worker, '/worker/policies', 'Policies'],
   [worker, '/worker/interim-measures', 'Interim measures'],
   [worker, '/worker/training', 'Training matrix'],
 ]
@@ -95,15 +95,13 @@ it('support workers cannot open admin routes', async () => {
   expect(router.state.location.pathname).toBe('/worker')
 })
 
-it('shows audits and policy reviews with demo data', async () => {
-  const router = createMemoryRouter(routes, {
-    initialEntries: ['/manager/audits-policies'],
-  })
+function renderAt(profile: Profile, path: string) {
+  const router = createMemoryRouter(routes, { initialEntries: [path] })
   render(
     <QueryClientProvider client={new QueryClient()}>
       <AuthContext
         value={{
-          profile: manager,
+          profile,
           loading: false,
           signOut: async () => {},
           signInAs: () => {},
@@ -113,13 +111,31 @@ it('shows audits and policy reviews with demo data', async () => {
       </AuthContext>
     </QueryClientProvider>,
   )
+}
+
+it('shows audits to the admin', async () => {
+  renderAt(admin, '/admin/audits')
   expect(await screen.findByText('Medication audit')).toBeInTheDocument()
+})
+
+it('lets managers manage policies and hides audits from them', async () => {
+  renderAt(manager, '/manager/policies')
   expect(
     await screen.findByText('Behaviour support policy'),
   ).toBeInTheDocument()
   expect(
     screen.getByRole('button', { name: 'Mark Safeguarding policy reviewed' }),
   ).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Audits' })).not.toBeInTheDocument()
+})
+
+it('only shows support workers the policies shared with them', async () => {
+  renderAt(worker, '/worker/policies')
+  expect(await screen.findByText('Complaints procedure')).toBeInTheDocument()
+  expect(screen.queryByText('Behaviour support policy')).not.toBeInTheDocument()
+  expect(
+    screen.queryByRole('button', { name: /reviewed/ }),
+  ).not.toBeInTheDocument()
 })
 
 it('moves a measure to history once its item is no longer red', async () => {
@@ -127,23 +143,7 @@ it('moves a measure to history once its item is no longer red', async () => {
     itemKey: 'dbs:s1',
     note: 'Historic measure note',
   })
-  const router = createMemoryRouter(routes, {
-    initialEntries: ['/manager/interim-measures'],
-  })
-  render(
-    <QueryClientProvider client={new QueryClient()}>
-      <AuthContext
-        value={{
-          profile: manager,
-          loading: false,
-          signOut: async () => {},
-          signInAs: () => {},
-        }}
-      >
-        <RouterProvider router={router} />
-      </AuthContext>
-    </QueryClientProvider>,
-  )
+  renderAt(manager, '/manager/interim-measures')
   expect(
     await screen.findByRole('heading', { name: 'Closed measures' }),
   ).toBeInTheDocument()

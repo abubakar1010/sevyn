@@ -88,6 +88,36 @@ describe('home profile', () => {
   })
 })
 
+describe('audits and policies', () => {
+  it('limits audits to admins', async () => {
+    expect(await api.listAudits(manager)).toEqual([])
+    expect((await api.listAudits(admin)).length).toBeGreaterThan(0)
+    await expect(
+      api.addAudit(manager, {
+        homeId: 'h1',
+        title: 'X',
+        auditDate: '2026-01-01',
+        requiredAction: '',
+      }),
+    ).rejects.toThrow('Admins only')
+  })
+  it('hides unshared policies from support workers', async () => {
+    const all = await api.listPolicies(manager)
+    const visible = await api.listPolicies(worker)
+    expect(visible.length).toBeLessThan(all.length)
+    expect(visible.every((p) => p.visibleToWorkers)).toBe(true)
+  })
+  it('lets a manager share a policy with workers', async () => {
+    await api.setPolicyVisibility(manager, { id: 'p2', visibleToWorkers: true })
+    expect((await api.listPolicies(worker)).some((p) => p.id === 'p2')).toBe(
+      true,
+    )
+    await expect(
+      api.setPolicyVisibility(worker, { id: 'p2', visibleToWorkers: false }),
+    ).rejects.toThrow('Not permitted')
+  })
+})
+
 describe('archive and delete', () => {
   it('archived staff disappear from lists and the change is audited', async () => {
     await api.archiveStaff(manager, { id: 's3' })

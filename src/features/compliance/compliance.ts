@@ -2,6 +2,7 @@ import { ragForDate, worstRag } from '@/lib/rag'
 import type {
   ComplianceItem,
   InterimMeasure,
+  Policy,
   Rag,
   StaffMember,
   TrainingRecord,
@@ -13,6 +14,7 @@ export function buildComplianceItems(
   measures: InterimMeasure[],
   now = new Date(),
   amberDays = 30,
+  policies: Policy[] = [],
 ): ComplianceItem[] {
   const measureFor = (key: string) =>
     measures.find((m) => m.itemKey === key && m.active)
@@ -62,6 +64,9 @@ export function buildComplianceItems(
       items.push(
         item(`training:${t.id}`, s.homeId, s.fullName, t.course, t.expiresOn),
       )
+  }
+  for (const p of policies) {
+    items.push(item(`policy:${p.id}`, '', 'Policy', p.title, p.reviewDue))
   }
   return items
 }

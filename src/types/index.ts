@@ -157,5 +157,9 @@ export interface Policy {
   id: string
   title: string
   lastReviewed: string
+  /** Date the policy expires and must be reviewed again. */
   reviewDue: string
+  fileName?: string
+  /** Support workers only see policies a manager has shared with them. */
+  visibleToWorkers: boolean
 }

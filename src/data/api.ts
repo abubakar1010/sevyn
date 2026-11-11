@@ -163,6 +163,10 @@ const ITEM_LABELS: Record<string, string> = {
 /** Turns a compliance item key (e.g. `dbs:s6`) into a readable label and its home. */
 function describeItem(key: string): { target: string; homeId: string } | null {
   const [kind, id] = key.split(':')
+  if (kind === 'policy') {
+    const policy = mock.policies.find((p) => p.id === id)
+    return policy ? { target: `${policy.title} policy`, homeId: '' } : null
+  }
   const record =
     kind === 'training'
       ? mock.trainingRecords.find((t) => t.id === id)
@@ -408,7 +412,7 @@ export async function saveSettings(profile: Profile, input: OrgSettings) {
 export const listAudits = (profile: Profile): Promise<Audit[]> =>
   delay(
     mock.audits
-      .filter((a) => canSee(profile, a.homeId))
+      .filter(() => profile.role === 'admin')
       .sort((a, b) => b.auditDate.localeCompare(a.auditDate)),
   )
 
@@ -417,7 +421,7 @@ export async function addAudit(
   input: Pick<Audit, 'homeId' | 'title' | 'auditDate' | 'requiredAction'>,
 ) {
   requireText(input.title, 'Audit title')
-  assertCanWrite(profile, input.homeId)
+  assertAdmin(profile)
   mock.audits.push({
     id: newId(),
     resolved: input.requiredAction.trim() === '',
@@ -433,7 +437,7 @@ export async function setAuditResolved(
 ) {
   const found = mock.audits.find((a) => a.id === input.id)
   if (!found) throw new Error('Audit not found')
-  assertCanWrite(profile, found.homeId)
+  assertAdmin(profile)
   found.resolved = input.resolved
   audit(
     profile,
@@ -444,13 +448,19 @@ export async function setAuditResolved(
   return delay(true)
 }
 
-export const listPolicies = (): Promise<Policy[]> => delay([...mock.policies])
+export const listPolicies = (profile: Profile): Promise<Policy[]> =>
+  delay(
+    mock.policies.filter(
+      (p) => profile.role !== 'support_worker' || p.visibleToWorkers,
+    ),
+  )
 
 export async function addPolicy(
   profile: Profile,
-  input: Pick<Policy, 'title' | 'reviewDue'>,
+  input: Pick<Policy, 'title' | 'reviewDue' | 'fileName' | 'visibleToWorkers'>,
 ) {
   requireText(input.title, 'Policy title')
+  requireText(input.reviewDue, 'Expiry date')
   assertCanWrite(profile)
   mock.policies.push({
     id: newId(),
@@ -458,6 +468,24 @@ export async function addPolicy(
     ...input,
   })
   audit(profile, 'Added policy', input.title)
+  return delay(true)
+}
+
+export async function setPolicyVisibility(
+  profile: Profile,
+  input: { id: string; visibleToWorkers: boolean },
+) {
+  assertCanWrite(profile)
+  const found = mock.policies.find((p) => p.id === input.id)
+  if (!found) throw new Error('Policy not found')
+  found.visibleToWorkers = input.visibleToWorkers
+  audit(
+    profile,
+    input.visibleToWorkers
+      ? 'Shared policy with support workers'
+      : 'Hid policy from support workers',
+    found.title,
+  )
   return delay(true)
 }
 
