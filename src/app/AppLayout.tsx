@@ -30,7 +30,7 @@ export function AppLayout({ nav }: { nav: NavItem[] }) {
     <div className="flex min-h-screen flex-col md:flex-row">
       {/* Mobile header */}
       <header className="sticky top-0 z-30 order-1 flex items-center justify-between bg-primary-950 px-4 py-2.5 text-white md:hidden">
-        <Logo light />
+        <Logo />
         <HeaderActions dark showOfsted={false} />
       </header>
 
@@ -44,7 +44,7 @@ export function AppLayout({ nav }: { nav: NavItem[] }) {
           className="pointer-events-none absolute bottom-10 -left-20 hidden size-56 animate-float-slow rounded-full bg-primary-500/30 blur-3xl md:block"
         />
         <div className="relative hidden px-6 pt-7 pb-6 md:block">
-          <Logo light />
+          <Logo />
         </div>
         <nav
           aria-label="Main"

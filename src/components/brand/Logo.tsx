@@ -26,24 +26,6 @@ export function LogoMark({
   )
 }
 
-export function Logo({
-  className,
-  light = false,
-}: {
-  className?: string
-  light?: boolean
-}) {
-  return (
-    <span className={cn('inline-flex items-center gap-2.5', className)}>
-      <LogoMark />
-      <span
-        className={cn(
-          'font-sans text-[1.75rem] leading-none font-bold tracking-tight',
-          light ? 'text-white' : 'text-[#111827] dark:text-white',
-        )}
-      >
-        Sevyn
-      </span>
-    </span>
-  )
+export function Logo({ className }: { className?: string }) {
+  return <LogoMark title="Sevyn" className={cn('h-10', className)} />
 }

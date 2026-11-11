@@ -40,7 +40,7 @@ export function LoginPage() {
           aria-hidden
           className="pointer-events-none absolute -bottom-24 -left-16 size-80 animate-float-slow rounded-full bg-primary-500/35 blur-3xl"
         />
-        <Logo light className="relative" />
+        <Logo className="relative" />
         <div className="relative my-8 md:my-0">
           <p className="font-display text-4xl leading-[1.05] font-semibold tracking-tight md:text-6xl">
             Compliance,
