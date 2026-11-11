@@ -22,13 +22,16 @@ import {
 import { daysFromNow } from '@/data/mock'
 import { cn } from '@/lib/cn'
 import { formatDate } from '@/lib/format'
+import { useAuth } from '@/app/useAuth'
 import { useCanEdit } from '@/lib/useCanEdit'
 import type { Task } from '@/types'
 
 type Editing = Task | 'new' | null
 
 export function TasksPage() {
+  const { profile } = useAuth()
   const canEdit = useCanEdit()
+  const isAdmin = profile?.role === 'admin'
   const tasks = useTasks()
   const homes = useHomes()
   const staff = useStaff()
@@ -56,7 +59,16 @@ export function TasksPage() {
     }
     const done = { onSuccess: () => setEditing(null) }
     if (current) update.mutate({ id: current.id, ...fields }, done)
-    else add.mutate({ homeId: effectiveHome, ...fields }, done)
+    else {
+      // Admins pick a registered manager; the task belongs to that manager's home.
+      const homeOfAssignee = staff.data?.find(
+        (m) => m.id === fields.assigneeId,
+      )?.homeId
+      add.mutate(
+        { homeId: (isAdmin && homeOfAssignee) || effectiveHome, ...fields },
+        done,
+      )
+    }
   }
 
   return (
@@ -159,23 +171,27 @@ export function TasksPage() {
                 />
               )}
             </Field>
-            <Field label="Home">
-              {(p) => (
-                <Select
-                  value={effectiveHome}
-                  disabled={current !== null}
-                  onChange={(e) => setHomeId(e.target.value)}
-                  {...p}
-                >
-                  {homes.data?.map((h) => (
-                    <option key={h.id} value={h.id}>
-                      {h.name}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            </Field>
-            <Field label="Assign to">
+            {!isAdmin && (
+              <Field label="Home">
+                {(p) => (
+                  <Select
+                    value={effectiveHome}
+                    disabled={current !== null}
+                    onChange={(e) => setHomeId(e.target.value)}
+                    {...p}
+                  >
+                    {homes.data?.map((h) => (
+                      <option key={h.id} value={h.id}>
+                        {h.name}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              </Field>
+            )}
+            <Field
+              label={isAdmin ? 'Assign to registered manager' : 'Assign to'}
+            >
               {(p) => (
                 <Select
                   key={effectiveHome}
@@ -185,7 +201,11 @@ export function TasksPage() {
                   {...p}
                 >
                   {staff.data
-                    ?.filter((s) => s.homeId === effectiveHome)
+                    ?.filter((s) =>
+                      isAdmin
+                        ? s.jobTitle === 'Registered Manager'
+                        : s.homeId === effectiveHome,
+                    )
                     .map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.fullName}

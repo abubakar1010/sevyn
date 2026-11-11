@@ -15,6 +15,7 @@ const CASES: [Profile, string, string][] = [
   [admin, '/admin/users', 'Users & roles'],
   [admin, '/admin/homes', 'Homes & units'],
   [admin, '/admin/staff', 'Staff'],
+  [admin, '/admin/tasks', 'Tasks'],
   [admin, '/admin/training', 'Training matrix'],
   [admin, '/admin/interim-measures', 'Interim measures'],
   [admin, '/admin/audits', 'Audits'],
@@ -37,7 +38,6 @@ const CASES: [Profile, string, string][] = [
   [worker, '/worker/tasks', 'Tasks'],
   [worker, '/worker/policies', 'Policies'],
   [worker, '/worker/interim-measures', 'Interim measures'],
-  [worker, '/worker/training', 'Training matrix'],
 ]
 
 describe.each(CASES)('%o', (profile, path, heading) => {

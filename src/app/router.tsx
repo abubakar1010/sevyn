@@ -27,6 +27,7 @@ const adminNav: NavItem[] = [
   { to: '/admin/homes', label: 'Homes' },
   { to: '/admin/staff', label: 'Staff' },
   { to: '/admin/training', label: 'Training' },
+  { to: '/admin/tasks', label: 'Tasks' },
   { to: '/admin/interim-measures', label: 'Interim measures' },
   { to: '/admin/audits', label: 'Audits' },
   { to: '/admin/policies', label: 'Policies' },
@@ -54,7 +55,6 @@ const workerNav: NavItem[] = [
   { to: '/worker/tasks', label: 'Tasks' },
   { to: '/worker/policies', label: 'Policies' },
   { to: '/worker/interim-measures', label: 'Interim measures' },
-  { to: '/worker/training', label: 'Training' },
 ]
 
 export const routes: RouteObject[] = [
@@ -75,6 +75,7 @@ export const routes: RouteObject[] = [
           { path: 'homes', element: <HomesPage /> },
           { path: 'staff', element: <StaffPage /> },
           { path: 'training', element: <TrainingPage /> },
+          { path: 'tasks', element: <TasksPage /> },
           { path: 'interim-measures', element: <InterimMeasuresPage /> },
           { path: 'audits', element: <AuditsPage /> },
           { path: 'policies', element: <PoliciesPage /> },
@@ -118,7 +119,6 @@ export const routes: RouteObject[] = [
           { path: 'tasks', element: <TasksPage /> },
           { path: 'policies', element: <PoliciesPage /> },
           { path: 'interim-measures', element: <InterimMeasuresPage /> },
-          { path: 'training', element: <TrainingPage /> },
         ],
       },
     ],
