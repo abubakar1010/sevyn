@@ -1,3 +1,4 @@
+import { HOME_BY_ROLE } from '@/app/homeByRole'
 import { ragForDate, worstRag } from '@/lib/rag'
 import type {
   ComplianceItem,
@@ -5,6 +6,7 @@ import type {
   InterimMeasure,
   Policy,
   Rag,
+  Role,
   StaffMember,
   TrainingRecord,
 } from '@/types'
@@ -87,4 +89,27 @@ export function countByStatus(items: ComplianceItem[]): Record<Rag, number> {
     (acc, i) => ({ ...acc, [i.status]: acc[i.status] + 1 }),
     { red: 0, amber: 0, green: 0 },
   )
+}
+
+/** Pages each role can open, so a dashboard item only links somewhere that exists for them. */
+const SECTIONS: Record<Role, string[]> = {
+  admin: ['staff', 'training', 'policies', 'audits'],
+  registered_manager: ['staff', 'training', 'policies'],
+  support_worker: ['policies'],
+}
+
+const SECTION_BY_KIND: Record<string, string> = {
+  dbs: 'staff',
+  safeguarding: 'training',
+  training: 'training',
+  policy: 'policies',
+  audit: 'audits',
+}
+
+/** Where to go to action a compliance item, or null when this role has no page for it. */
+export function actionPath(key: string, role: Role): string | null {
+  const section = SECTION_BY_KIND[key.split(':')[0]]
+  return section && SECTIONS[role].includes(section)
+    ? `${HOME_BY_ROLE[role]}/${section}`
+    : null
 }

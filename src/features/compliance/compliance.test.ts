@@ -1,5 +1,10 @@
 import type { Audit, InterimMeasure, Policy, StaffMember } from '@/types'
-import { buildComplianceItems, countByStatus, homeStatus } from './compliance'
+import {
+  actionPath,
+  buildComplianceItems,
+  countByStatus,
+  homeStatus,
+} from './compliance'
 
 const now = new Date('2026-01-01')
 const staff: StaffMember[] = [
@@ -93,5 +98,22 @@ describe('policy and audit items', () => {
     expect(items.find((i) => i.key === 'audit:a1')?.status).toBe('amber')
     expect(items.some((i) => i.key === 'audit:a2')).toBe(false)
     expect(homeStatus(items, 'h2')).toBe('amber')
+  })
+})
+
+describe('actionPath', () => {
+  it('sends each item to the page where it is actioned', () => {
+    expect(actionPath('dbs:s1', 'admin')).toBe('/admin/staff')
+    expect(actionPath('safeguarding:s1', 'registered_manager')).toBe(
+      '/manager/training',
+    )
+    expect(actionPath('training:t1', 'admin')).toBe('/admin/training')
+    expect(actionPath('policy:p1', 'support_worker')).toBe('/worker/policies')
+    expect(actionPath('audit:a1', 'admin')).toBe('/admin/audits')
+  })
+  it('returns null where the role has no such page', () => {
+    expect(actionPath('audit:a1', 'registered_manager')).toBeNull()
+    expect(actionPath('dbs:s1', 'support_worker')).toBeNull()
+    expect(actionPath('unknown:x', 'admin')).toBeNull()
   })
 })

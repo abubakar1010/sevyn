@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useAuth } from '@/app/useAuth'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -15,7 +16,12 @@ import {
 } from '@/data/hooks'
 import { formatDate } from '@/lib/format'
 import type { Rag } from '@/types'
-import { buildComplianceItems, countByStatus, homeStatus } from '../compliance'
+import {
+  actionPath,
+  buildComplianceItems,
+  countByStatus,
+  homeStatus,
+} from '../compliance'
 import { ScoreHero } from '../ScoreHero'
 import { StatTile } from '../StatTile'
 
@@ -133,7 +139,18 @@ export function CompliancePage() {
                 <Td label="Status">
                   <RagBadge status={i.status} />
                 </Td>
-                <Td label="Item">{i.label}</Td>
+                <Td label="Item">
+                  {profile && actionPath(i.key, profile.role) ? (
+                    <Link
+                      to={actionPath(i.key, profile.role)!}
+                      className="font-medium text-primary-700 underline-offset-2 hover:underline dark:text-primary-200"
+                    >
+                      {i.label}
+                    </Link>
+                  ) : (
+                    i.label
+                  )}
+                </Td>
                 <Td label="Person">{i.subject}</Td>
                 <Td label="Home">
                   {homes.data.find((h) => h.id === i.homeId)?.name ??
