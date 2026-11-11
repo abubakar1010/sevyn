@@ -22,7 +22,7 @@ import { AuditLogPage } from '@/features/audit-log/pages/AuditLogPage'
 import { SettingsPage } from '@/features/settings/pages/SettingsPage'
 
 const adminNav: NavItem[] = [
-  { to: '/admin', label: 'Compliance' },
+  { to: '/admin', label: 'Dashboard' },
   { to: '/admin/users', label: 'Users' },
   { to: '/admin/homes', label: 'Homes' },
   { to: '/admin/staff', label: 'Staff' },
@@ -34,7 +34,7 @@ const adminNav: NavItem[] = [
 ]
 
 const managerNav: NavItem[] = [
-  { to: '/manager', label: 'Compliance' },
+  { to: '/manager', label: 'Dashboard' },
   { to: '/manager/homes', label: 'Homes' },
   { to: '/manager/young-people', label: 'Young people' },
   { to: '/manager/quick-logs', label: 'Quick logs' },
@@ -48,7 +48,7 @@ const managerNav: NavItem[] = [
 ]
 
 const workerNav: NavItem[] = [
-  { to: '/worker', label: 'Compliance' },
+  { to: '/worker', label: 'Dashboard' },
   { to: '/worker/young-people', label: 'Young people' },
   { to: '/worker/quick-logs', label: 'Quick logs' },
   { to: '/worker/tasks', label: 'Tasks' },
