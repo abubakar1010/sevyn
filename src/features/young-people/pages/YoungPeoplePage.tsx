@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { FormError } from '@/components/ui/FormError'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Field, Input, Select } from '@/components/ui/Field'
+import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { Modal } from '@/components/ui/Modal'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { QueryState } from '@/components/ui/QueryState'
@@ -18,8 +18,10 @@ import {
 import { useOfstedMode } from '@/features/ofsted-mode/useOfstedMode'
 import { formatDate } from '@/lib/format'
 import { useCanEdit } from '@/lib/useCanEdit'
-import type { YoungPerson } from '@/types'
+import type { YoungPerson, YoungPersonProfile } from '@/types'
+import { DocumentsPanel } from '@/features/documents/DocumentsPanel'
 import { youngPersonName } from '../display'
+import { PROFILE_GROUPS } from '../profileFields'
 
 type Editing = YoungPerson | 'new' | null
 
@@ -33,6 +35,8 @@ export function YoungPeoplePage() {
   const [archiving, setArchiving] = useState<YoungPerson | null>(null)
   const [editing, setEditing] = useState<Editing>(null)
   const current = editing && editing !== 'new' ? editing : null
+  const [fileId, setFileId] = useState<string | null>(null)
+  const file = people.data?.find((y) => y.id === fileId) ?? null
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -44,6 +48,12 @@ export function YoungPeoplePage() {
         fullName: String(f.get('fullName')).trim(),
         dateOfBirth: String(f.get('dob')),
         restricted: f.get('restricted') === 'on',
+        ...(Object.fromEntries(
+          PROFILE_GROUPS.flatMap((g) => g.fields).map((x) => [
+            x.key,
+            String(f.get(x.key) ?? '').trim(),
+          ]),
+        ) as unknown as YoungPersonProfile),
       },
       { onSuccess: () => setEditing(null) },
     )
@@ -82,7 +92,14 @@ export function YoungPeoplePage() {
               {people.data?.map((y) => (
                 <tr key={y.id}>
                   <Td label="Name" className="font-medium">
-                    {youngPersonName(y, ofsted)}
+                    <button
+                      type="button"
+                      className="text-left hover:underline"
+                      aria-label={`Open file for ${youngPersonName(y, ofsted)}`}
+                      onClick={() => setFileId(y.id)}
+                    >
+                      {youngPersonName(y, ofsted)}
+                    </button>
                   </Td>
                   <Td label="Home">
                     {homes.data?.find((h) => h.id === y.homeId)?.name}
@@ -186,11 +203,68 @@ export function YoungPeoplePage() {
                 </span>
               </span>
             </label>
+            {PROFILE_GROUPS.map((g) => (
+              <fieldset key={g.title} className="flex flex-col gap-4">
+                <legend className="mb-2 text-sm font-semibold text-slate-900">
+                  {g.title}
+                </legend>
+                {g.fields.map((x) => (
+                  <Field key={x.key} label={x.label}>
+                    {(p) =>
+                      x.long ? (
+                        <Textarea
+                          name={x.key}
+                          defaultValue={current?.[x.key]}
+                          {...p}
+                        />
+                      ) : (
+                        <Input
+                          name={x.key}
+                          type={x.type}
+                          defaultValue={current?.[x.key]}
+                          {...p}
+                        />
+                      )
+                    }
+                  </Field>
+                ))}
+              </fieldset>
+            ))}
             <FormError error={save.error} />
             <Button type="submit" disabled={save.isPending}>
               Save
             </Button>
           </form>
+        )}
+      </Modal>
+      <Modal
+        open={file !== null}
+        onClose={() => setFileId(null)}
+        title={file ? `File: ${youngPersonName(file, ofsted)}` : 'File'}
+      >
+        {file && (
+          <>
+            {PROFILE_GROUPS.map((g) => (
+              <section key={g.title} className="mb-5">
+                <h3 className="mb-2 text-sm font-semibold">{g.title}</h3>
+                <dl className="grid gap-3 text-sm sm:grid-cols-2">
+                  {g.fields.map((x) => (
+                    <div key={x.key}>
+                      <dt className="font-medium text-slate-800">{x.label}</dt>
+                      <dd className="whitespace-pre-wrap text-slate-700">
+                        {ofsted ? '••••••' : file[x.key] || '—'}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            ))}
+            <DocumentsPanel
+              ownerType="young_person"
+              ownerId={file.id}
+              homeId={file.homeId}
+            />
+          </>
         )}
       </Modal>
       <ConfirmDialog

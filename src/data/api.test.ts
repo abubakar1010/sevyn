@@ -1,5 +1,6 @@
 import { demoUsers } from './demoUsers'
 import * as api from './api'
+import { profile } from './mock'
 import type { HomeInput } from '@/types'
 
 const [admin, manager, worker] = demoUsers
@@ -244,6 +245,7 @@ describe('validation', () => {
         fullName: 'Test Person',
         dateOfBirth: '2999-01-01',
         restricted: false,
+        ...profile(),
       }),
     ).rejects.toThrow('future')
   })

@@ -65,7 +65,33 @@ export interface InterimMeasure {
   active: boolean
 }
 
-export interface YoungPerson {
+/** Profile details an Ofsted inspection file needs, grouped in the UI. */
+export interface YoungPersonProfile {
+  preferredName: string
+  gender: string
+  ethnicity: string
+  nhsNumber: string
+  legalStatus: string
+  placingAuthority: string
+  iroName: string
+  iroContact: string
+  keyWorker: string
+  socialWorkerName: string
+  socialWorkerEmail: string
+  socialWorkerPhone: string
+  socialWorkerOffice: string
+  nextOfKin: string
+  contactRestrictions: string
+  school: string
+  schoolContact: string
+  gpSurgery: string
+  allergiesMedical: string
+  ehcpStatus: string
+  missingRisk: string
+  abscondingProtocol: string
+}
+
+export interface YoungPerson extends YoungPersonProfile {
   id: string
   homeId: string
   initials: string

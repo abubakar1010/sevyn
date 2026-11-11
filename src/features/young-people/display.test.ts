@@ -1,3 +1,4 @@
+import { profile } from '@/data/mock'
 import type { YoungPerson } from '@/types'
 import { canViewRestricted, youngPersonName } from './display'
 
@@ -8,6 +9,7 @@ const yp: YoungPerson = {
   fullName: 'Demo Person',
   dateOfBirth: '2010-01-01',
   restricted: false,
+  ...profile(),
 }
 
 it('shows initials only in Ofsted Mode', () => {

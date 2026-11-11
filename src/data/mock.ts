@@ -13,6 +13,7 @@ import type {
   TrainingRecord,
   Unit,
   YoungPerson,
+  YoungPersonProfile,
 } from '@/types'
 
 /** Demo tenant: all names are fictional. Dates are relative to today so RAG states stay demonstrable. */
@@ -213,6 +214,34 @@ export const interimMeasures: InterimMeasure[] = [
   },
 ]
 
+export const profile = (
+  over: Partial<YoungPersonProfile> = {},
+): YoungPersonProfile => ({
+  preferredName: '',
+  gender: '',
+  ethnicity: '',
+  nhsNumber: '',
+  legalStatus: '',
+  placingAuthority: '',
+  iroName: '',
+  iroContact: '',
+  keyWorker: '',
+  socialWorkerName: '',
+  socialWorkerEmail: '',
+  socialWorkerPhone: '',
+  socialWorkerOffice: '',
+  nextOfKin: '',
+  contactRestrictions: '',
+  school: '',
+  schoolContact: '',
+  gpSurgery: '',
+  allergiesMedical: '',
+  ehcpStatus: '',
+  missingRisk: '',
+  abscondingProtocol: '',
+  ...over,
+})
+
 export const youngPeople: YoungPerson[] = [
   {
     id: 'y1',
@@ -221,6 +250,20 @@ export const youngPeople: YoungPerson[] = [
     fullName: 'Demo Young Person One',
     dateOfBirth: '2010-04-02',
     restricted: false,
+    ...profile({
+      preferredName: 'Alex',
+      gender: 'Male',
+      nhsNumber: '000 000 0001',
+      legalStatus: 'Section 20',
+      placingAuthority: 'Demotown Council',
+      keyWorker: 'Sam Taylor',
+      socialWorkerName: 'Pat Demo',
+      socialWorkerEmail: 'pat@example.test',
+      socialWorkerPhone: '01234 560001',
+      school: 'Demo College',
+      allergiesMedical: 'Penicillin allergy',
+      ehcpStatus: 'None',
+    }),
   },
   {
     id: 'y2',
@@ -229,6 +272,10 @@ export const youngPeople: YoungPerson[] = [
     fullName: 'Demo Young Person Two',
     dateOfBirth: '2009-09-18',
     restricted: true,
+    ...profile({
+      legalStatus: 'Care Order',
+      contactRestrictions: 'No contact with named adult',
+    }),
   },
   {
     id: 'y3',
@@ -237,6 +284,7 @@ export const youngPeople: YoungPerson[] = [
     fullName: 'Demo Young Person Three',
     dateOfBirth: '2011-01-30',
     restricted: false,
+    ...profile({ legalStatus: 'Section 20', ehcpStatus: 'In progress' }),
   },
 ]
 
