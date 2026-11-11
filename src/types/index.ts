@@ -107,15 +107,20 @@ export interface Unit {
   capacity: number
 }
 
-export type DocumentCategory = 'Policy' | 'Compliance' | 'Training'
+export type DocumentOwner = 'home' | 'staff' | 'young_person'
 
+/** A file held on a home, staff member or young person's file. */
 export interface DocumentRecord {
   id: string
   homeId: string
+  ownerType: DocumentOwner
+  ownerId: string
   title: string
-  category: DocumentCategory
+  /** Chosen from the fixed category list for the owner type. */
+  category: string
   fileName: string
   uploadedAt: string
+  expiresOn?: string | null
 }
 
 /** Append-only: the API exposes no update or delete for these. */

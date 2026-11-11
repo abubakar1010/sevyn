@@ -4,7 +4,6 @@ import type {
   Policy,
   AuditEntry,
   OrgSettings,
-  DocumentCategory,
   DocumentRecord,
   Home,
   HomeInput,
@@ -318,12 +317,7 @@ export const listDocuments = (profile: Profile): Promise<DocumentRecord[]> =>
 
 export async function addDocument(
   profile: Profile,
-  input: {
-    homeId: string
-    title: string
-    category: DocumentCategory
-    fileName: string
-  },
+  input: Omit<DocumentRecord, 'id' | 'uploadedAt'>,
 ) {
   requireText(input.title, 'Title')
   assertCanWrite(profile, input.homeId)

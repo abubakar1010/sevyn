@@ -23,6 +23,7 @@ import {
   useAmberDays,
   useAudits,
 } from '@/data/hooks'
+import { DocumentsPanel } from '@/features/documents/DocumentsPanel'
 import { useCanEdit } from '@/lib/useCanEdit'
 import type { Home, HomeInput, Unit } from '@/types'
 import {
@@ -294,18 +295,25 @@ export function HomesPage() {
         title={detail?.name ?? 'Home'}
       >
         {detail && (
-          <dl className="grid gap-3 text-sm sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <dt className="font-medium text-slate-800">Address</dt>
-              <dd className="text-slate-700">{detail.address}</dd>
-            </div>
-            {DETAIL_ROWS.map(([label, get]) => (
-              <div key={label}>
-                <dt className="font-medium text-slate-800">{label}</dt>
-                <dd className="text-slate-700">{get(detail) || '�'}</dd>
+          <>
+            <dl className="grid gap-3 text-sm sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <dt className="font-medium text-slate-800">Address</dt>
+                <dd className="text-slate-700">{detail.address}</dd>
               </div>
-            ))}
-          </dl>
+              {DETAIL_ROWS.map(([label, get]) => (
+                <div key={label}>
+                  <dt className="font-medium text-slate-800">{label}</dt>
+                  <dd className="text-slate-700">{get(detail) || '�'}</dd>
+                </div>
+              ))}
+            </dl>
+            <DocumentsPanel
+              ownerType="home"
+              ownerId={detail.id}
+              homeId={detail.id}
+            />
+          </>
         )}
       </Modal>
       <ConfirmDialog
