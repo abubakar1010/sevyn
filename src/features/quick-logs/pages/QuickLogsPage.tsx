@@ -21,6 +21,8 @@ import { youngPersonName } from '@/features/young-people/display'
 import { formatDateTime } from '@/lib/format'
 import { useCanEdit } from '@/lib/useCanEdit'
 import type { QuickLog } from '@/types'
+import { ProgressChart } from '../ProgressChart'
+import { RATING_LABEL, type Rating } from '../progress'
 import { LOG_TAGS } from '../tags'
 
 type Editing = QuickLog | 'new' | null
@@ -57,6 +59,8 @@ export function QuickLogsPage() {
         (!personFilter || l.youngPersonId === personFilter),
     ) ?? []
 
+  const personLogs =
+    logs.data?.filter((l) => l.youngPersonId === personFilter) ?? []
   const current = editing && editing !== 'new' ? editing : null
 
   function submit(e: FormEvent<HTMLFormElement>) {
@@ -64,9 +68,13 @@ export function QuickLogsPage() {
     const f = new FormData(e.currentTarget)
     const tags = f.getAll('tags').map(String)
     const note = String(f.get('note'))
+    const ratings = Object.fromEntries(
+      tags.map((t) => [t, Number(f.get(`rating:${t}`) ?? 0) as Rating]),
+    )
     const occurredAt = new Date(String(f.get('occurredAt'))).toISOString()
     const done = { onSuccess: () => setEditing(null) }
-    if (current) update.mutate({ id: current.id, tags, note, occurredAt }, done)
+    if (current)
+      update.mutate({ id: current.id, tags, note, occurredAt, ratings }, done)
     else
       add.mutate(
         {
@@ -74,6 +82,7 @@ export function QuickLogsPage() {
           tags,
           note,
           occurredAt,
+          ratings,
         },
         done,
       )
@@ -119,6 +128,7 @@ export function QuickLogsPage() {
             )}
           </Field>
         </div>
+        {personFilter && <ProgressChart logs={personLogs} />}
         {shown.length === 0 ? (
           <EmptyState
             title="No logs yet"
@@ -148,6 +158,8 @@ export function QuickLogsPage() {
                       {l.tags.map((t) => (
                         <Badge key={t} tone="info">
                           {t}
+                          {l.ratings?.[t] !== undefined &&
+                            `: ${RATING_LABEL[l.ratings[t]].toLowerCase()}`}
                         </Badge>
                       ))}
                     </div>
@@ -218,20 +230,37 @@ export function QuickLogsPage() {
             </Field>
             <fieldset>
               <legend className="mb-1.5 text-sm font-medium text-slate-800">
-                Progress tags
+                Progress tags and how the young person is doing in each
               </legend>
-              <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-1">
                 {LOG_TAGS.map((t) => (
-                  <label key={t} className="flex min-h-11 items-center gap-3">
-                    <input
-                      type="checkbox"
-                      name="tags"
-                      value={t}
-                      defaultChecked={current?.tags.includes(t)}
-                      className="size-5 accent-primary-700"
-                    />
-                    {t}
-                  </label>
+                  <div
+                    key={t}
+                    className="flex min-h-11 flex-wrap items-center gap-x-3"
+                  >
+                    <label className="flex min-h-11 items-center gap-3">
+                      <input
+                        type="checkbox"
+                        name="tags"
+                        value={t}
+                        defaultChecked={current?.tags.includes(t)}
+                        className="size-5 accent-primary-700"
+                      />
+                      {t}
+                    </label>
+                    <select
+                      name={`rating:${t}`}
+                      aria-label={`Rating for ${t}`}
+                      defaultValue={current?.ratings?.[t] ?? 0}
+                      className="min-h-9 rounded-lg border border-slate-300 bg-surface px-2 text-sm"
+                    >
+                      {([-1, 0, 1] as Rating[]).map((r) => (
+                        <option key={r} value={r}>
+                          {RATING_LABEL[r]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 ))}
               </div>
             </fieldset>

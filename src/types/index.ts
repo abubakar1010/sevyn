@@ -119,6 +119,8 @@ export interface QuickLog {
   /** When the event actually happened; may be earlier than `createdAt`. */
   occurredAt: string
   tags: string[]
+  /** Per progress area: -1 declined, 0 no change, 1 progressing. Drives the progress graph. */
+  ratings?: Record<string, -1 | 0 | 1>
   note: string
 }
 

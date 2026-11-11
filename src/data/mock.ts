@@ -296,6 +296,29 @@ export const youngPeople: YoungPerson[] = [
   },
 ]
 
+/** Rated history for the first young person so the progress graph has something to show. */
+const earlierLogs: QuickLog[] = (
+  [
+    [-35, { 'Emotional Wellbeing': -1, Education: 0 }],
+    [-30, { 'Emotional Wellbeing': 0, Health: 1 }],
+    [-24, { 'Emotional Wellbeing': 1, Education: 1 }],
+    [-18, { 'Family & Relationships': -1, Health: 1 }],
+    [-12, { Education: 1, 'Family & Relationships': 0 }],
+    [-8, { 'Emotional Wellbeing': 1, 'Family & Relationships': 1 }],
+    [-4, { Education: 1, Health: 0, Independence: 1 }],
+  ] as [number, Record<string, -1 | 0 | 1>][]
+).map(([days, ratings], i) => ({
+  id: `qh${i}`,
+  homeId: 'h1',
+  youngPersonId: 'y1',
+  authorId: 's2',
+  createdAt: daysFromNow(days),
+  occurredAt: daysFromNow(days),
+  tags: Object.keys(ratings),
+  ratings,
+  note: 'Keyworker session and daily check-in.',
+}))
+
 export const quickLogs: QuickLog[] = [
   {
     id: 'q1',
@@ -305,8 +328,10 @@ export const quickLogs: QuickLog[] = [
     createdAt: daysFromNow(-1),
     occurredAt: daysFromNow(-1),
     tags: ['Emotional Wellbeing'],
+    ratings: { 'Emotional Wellbeing': 1 },
     note: 'Settled well after school; chose to join group activity.',
   },
+  ...earlierLogs,
   {
     id: 'q2',
     homeId: 'h2',

@@ -274,7 +274,10 @@ export async function listQuickLogs(profile: Profile): Promise<QuickLog[]> {
 
 export async function addQuickLog(
   profile: Profile,
-  input: Pick<QuickLog, 'youngPersonId' | 'tags' | 'note' | 'occurredAt'>,
+  input: Pick<
+    QuickLog,
+    'youngPersonId' | 'tags' | 'note' | 'occurredAt' | 'ratings'
+  >,
 ) {
   const yp = (await listYoungPeople(profile)).find(
     (y) => y.id === input.youngPersonId,
@@ -567,7 +570,7 @@ export async function deleteTask(profile: Profile, input: { id: string }) {
 export async function updateQuickLog(
   profile: Profile,
   input: Pick<QuickLog, 'id' | 'tags' | 'note'> &
-    Partial<Pick<QuickLog, 'occurredAt'>>,
+    Partial<Pick<QuickLog, 'occurredAt' | 'ratings'>>,
 ) {
   const log = mock.quickLogs.find((l) => l.id === input.id)
   if (!log || !canSee(profile, log.homeId)) throw new Error('Not permitted')
@@ -578,6 +581,7 @@ export async function updateQuickLog(
     tags: input.tags,
     note: input.note.trim(),
     ...(input.occurredAt && { occurredAt: input.occurredAt }),
+    ...(input.ratings && { ratings: input.ratings }),
   })
   audit(profile, 'Edited quick log', log.youngPersonId, log.homeId)
   return delay(true)
