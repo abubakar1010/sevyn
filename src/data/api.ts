@@ -22,14 +22,14 @@ import * as mock from './mock'
 /**
  * Data access boundary. Currently backed by in-memory mock data; each function
  * becomes a Supabase query later, with the same signature.
- * Scoping and write checks mirror what RLS will enforce: non-admins only see
+ * Scoping and write checks mirror what RLS will enforce: other roles only see
  * their assigned homes, and support workers are read-only.
  */
 const delay = <T>(value: T) =>
   new Promise<T>((resolve) => setTimeout(() => resolve(value), 80))
 
 const canSee = (profile: Profile, homeId: string) =>
-  profile.role === 'admin' || profile.homeIds.includes(homeId)
+  profile.role === 'responsible_individual' || profile.homeIds.includes(homeId)
 
 function assertCanWrite(profile: Profile, homeId?: string) {
   if (profile.role === 'support_worker') throw new Error('Not permitted')
@@ -99,7 +99,8 @@ export async function addHome(profile: Profile, input: HomeInput) {
   validateHome(input)
   if (mock.homes.some((h) => sameName(h.name, input.name)))
     throw new Error('A home with this name already exists')
-  if (profile.role !== 'admin') throw new Error('Only admins can create homes')
+  if (profile.role !== 'responsible_individual')
+    throw new Error('Only Responsible Individuals can create homes')
   mock.homes.push({ id: newId(), ...input })
   audit(profile, 'Added home', input.name)
   return delay(true)
@@ -361,12 +362,13 @@ export function listAuditLog(profile: Profile): Promise<AuditEntry[]> {
   )
 }
 
-function assertAdmin(profile: Profile) {
-  if (profile.role !== 'admin') throw new Error('Admins only')
+function assertResponsibleIndividual(profile: Profile) {
+  if (profile.role !== 'responsible_individual')
+    throw new Error('Responsible Individuals only')
 }
 
 export function listUsers(profile: Profile): Promise<AppUser[]> {
-  assertAdmin(profile)
+  assertResponsibleIndividual(profile)
   return delay([...mock.appUsers])
 }
 
@@ -383,11 +385,11 @@ export async function saveUser(
     )
   )
     throw new Error('A user with this email already exists')
-  if (input.role !== 'admin' && input.homeIds.length === 0)
+  if (input.role !== 'responsible_individual' && input.homeIds.length === 0)
     throw new Error('Select at least one home for this user')
-  assertAdmin(profile)
+  assertResponsibleIndividual(profile)
   const idx = input.id ? mock.appUsers.findIndex((u) => u.id === input.id) : -1
-  const homeIds = input.role === 'admin' ? [] : input.homeIds
+  const homeIds = input.role === 'responsible_individual' ? [] : input.homeIds
   if (idx >= 0)
     mock.appUsers[idx] = {
       ...mock.appUsers[idx],
@@ -404,7 +406,7 @@ export async function setUserActive(
   profile: Profile,
   input: { id: string; active: boolean },
 ) {
-  assertAdmin(profile)
+  assertResponsibleIndividual(profile)
   const user = mock.appUsers.find((u) => u.id === input.id)
   if (!user) throw new Error('User not found')
   if (user.id === profile.id) throw new Error('You cannot deactivate yourself')
@@ -421,7 +423,7 @@ export const getSettings = (): Promise<OrgSettings> =>
   delay({ ...mock.orgSettings })
 
 export async function saveSettings(profile: Profile, input: OrgSettings) {
-  assertAdmin(profile)
+  assertResponsibleIndividual(profile)
   if (
     !Number.isInteger(input.amberDays) ||
     input.amberDays < 1 ||
@@ -436,7 +438,7 @@ export async function saveSettings(profile: Profile, input: OrgSettings) {
 export const listAudits = (profile: Profile): Promise<Audit[]> =>
   delay(
     mock.audits
-      .filter(() => profile.role === 'admin')
+      .filter(() => profile.role === 'responsible_individual')
       .sort((a, b) => b.auditDate.localeCompare(a.auditDate)),
   )
 
@@ -455,7 +457,7 @@ export async function addAudit(
   requireText(input.title, 'Audit title')
   if (input.expiryDate && input.expiryDate < input.auditDate)
     throw new Error('Next due date must be on or after the audit date')
-  assertAdmin(profile)
+  assertResponsibleIndividual(profile)
   mock.audits.push({
     id: newId(),
     resolved: input.requiredAction.trim() === '',
@@ -471,7 +473,7 @@ export async function setAuditResolved(
 ) {
   const found = mock.audits.find((a) => a.id === input.id)
   if (!found) throw new Error('Audit not found')
-  assertAdmin(profile)
+  assertResponsibleIndividual(profile)
   found.resolved = input.resolved
   audit(
     profile,
@@ -566,7 +568,7 @@ export async function deleteTask(profile: Profile, input: { id: string }) {
   return delay(true)
 }
 
-/** Authors may correct their own logs; managers and admins may correct any log they can see. */
+/** Authors may correct their own logs; managers and Responsible Individuals may correct any log they can see. */
 export async function updateQuickLog(
   profile: Profile,
   input: Pick<QuickLog, 'id' | 'tags' | 'note'> &
@@ -594,7 +596,8 @@ export async function updateHome(
   validateHome(input)
   if (mock.homes.some((h) => h.id !== input.id && sameName(h.name, input.name)))
     throw new Error('A home with this name already exists')
-  if (profile.role !== 'admin') throw new Error('Only admins can edit homes')
+  if (profile.role !== 'responsible_individual')
+    throw new Error('Only Responsible Individuals can edit homes')
   const home = mock.homes.find((h) => h.id === input.id)
   if (!home) throw new Error('Home not found')
   Object.assign(home, input)

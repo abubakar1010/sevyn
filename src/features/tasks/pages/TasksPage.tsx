@@ -31,7 +31,7 @@ type Editing = Task | 'new' | null
 export function TasksPage() {
   const { profile } = useAuth()
   const canEdit = useCanEdit()
-  const isAdmin = profile?.role === 'admin'
+  const isResponsibleIndividual = profile?.role === 'responsible_individual'
   const tasks = useTasks()
   const homes = useHomes()
   const staff = useStaff()
@@ -60,12 +60,15 @@ export function TasksPage() {
     const done = { onSuccess: () => setEditing(null) }
     if (current) update.mutate({ id: current.id, ...fields }, done)
     else {
-      // Admins pick a registered manager; the task belongs to that manager's home.
+      // Responsible Individuals pick a registered manager; the task belongs to that manager's home.
       const homeOfAssignee = staff.data?.find(
         (m) => m.id === fields.assigneeId,
       )?.homeId
       add.mutate(
-        { homeId: (isAdmin && homeOfAssignee) || effectiveHome, ...fields },
+        {
+          homeId: (isResponsibleIndividual && homeOfAssignee) || effectiveHome,
+          ...fields,
+        },
         done,
       )
     }
@@ -171,7 +174,7 @@ export function TasksPage() {
                 />
               )}
             </Field>
-            {!isAdmin && (
+            {!isResponsibleIndividual && (
               <Field label="Home">
                 {(p) => (
                   <Select
@@ -190,7 +193,11 @@ export function TasksPage() {
               </Field>
             )}
             <Field
-              label={isAdmin ? 'Assign to registered manager' : 'Assign to'}
+              label={
+                isResponsibleIndividual
+                  ? 'Assign to registered manager'
+                  : 'Assign to'
+              }
             >
               {(p) => (
                 <Select
@@ -202,7 +209,7 @@ export function TasksPage() {
                 >
                   {staff.data
                     ?.filter((s) =>
-                      isAdmin
+                      isResponsibleIndividual
                         ? s.jobTitle === 'Registered Manager'
                         : s.homeId === effectiveHome,
                     )

@@ -10,7 +10,8 @@ import { ROLE_LABEL } from '@/lib/roles'
 import type { Role } from '@/types'
 
 const ROLE_BLURB: Record<Role, string> = {
-  admin: 'Homes, users and settings',
+  responsible_individual:
+    'Homes, users, settings, young people and Ofsted Mode',
   registered_manager: 'Homes, staff, young people and Ofsted Mode',
   support_worker: 'Daily logs, tasks and your home’s status',
 }
@@ -21,7 +22,7 @@ const PROMISES = [
   'Inspection-ready with Ofsted Mode',
 ]
 
-// TODO: password + authenticator 2FA for admins/managers; emailed one-time code for support workers.
+// TODO: password + authenticator 2FA for Responsible Individuals/managers; emailed one-time code for support workers.
 export function LoginPage() {
   const { signInAs } = useAuth()
   const navigate = useNavigate()

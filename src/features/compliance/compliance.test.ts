@@ -103,17 +103,23 @@ describe('policy and audit items', () => {
 
 describe('actionPath', () => {
   it('sends each item to the page where it is actioned', () => {
-    expect(actionPath('dbs:s1', 'admin')).toBe('/admin/staff')
+    expect(actionPath('dbs:s1', 'responsible_individual')).toBe(
+      '/responsible-individual/staff',
+    )
     expect(actionPath('safeguarding:s1', 'registered_manager')).toBe(
       '/manager/training',
     )
-    expect(actionPath('training:t1', 'admin')).toBe('/admin/training')
+    expect(actionPath('training:t1', 'responsible_individual')).toBe(
+      '/responsible-individual/training',
+    )
     expect(actionPath('policy:p1', 'support_worker')).toBe('/worker/policies')
-    expect(actionPath('audit:a1', 'admin')).toBe('/admin/audits')
+    expect(actionPath('audit:a1', 'responsible_individual')).toBe(
+      '/responsible-individual/audits',
+    )
   })
   it('returns null where the role has no such page', () => {
     expect(actionPath('audit:a1', 'registered_manager')).toBeNull()
     expect(actionPath('dbs:s1', 'support_worker')).toBeNull()
-    expect(actionPath('unknown:x', 'admin')).toBeNull()
+    expect(actionPath('unknown:x', 'responsible_individual')).toBeNull()
   })
 })

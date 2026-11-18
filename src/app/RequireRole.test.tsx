@@ -15,10 +15,13 @@ vi.mock('./useAuth', () => ({
 function renderAt(profile: Profile | null) {
   current = profile
   render(
-    <MemoryRouter initialEntries={['/admin']}>
+    <MemoryRouter initialEntries={['/responsible-individual']}>
       <Routes>
-        <Route element={<RequireRole roles={['admin']} />}>
-          <Route path="/admin" element={<p>admin area</p>} />
+        <Route element={<RequireRole roles={['responsible_individual']} />}>
+          <Route
+            path="/responsible-individual"
+            element={<p>responsible individual area</p>}
+          />
         </Route>
         <Route path="/login" element={<p>login</p>} />
         <Route path="/worker" element={<p>worker home</p>} />
@@ -46,10 +49,10 @@ describe('RequireRole', () => {
     renderAt({
       id: '1',
       organisationId: 'o',
-      role: 'admin',
+      role: 'responsible_individual',
       fullName: 'A',
       homeIds: [],
     })
-    expect(screen.getByText('admin area')).toBeInTheDocument()
+    expect(screen.getByText('responsible individual area')).toBeInTheDocument()
   })
 })

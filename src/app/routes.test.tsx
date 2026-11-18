@@ -8,21 +8,29 @@ import type { Profile } from '@/types'
 import { AuthContext } from './useAuth'
 import { routes } from './router'
 
-const [admin, manager, worker] = demoUsers
+const [responsibleIndividual, manager, worker] = demoUsers
 
 // Every role's routes must render their page heading with demo data and no runtime errors.
 const CASES: [Profile, string, string][] = [
-  [admin, '/admin', 'Compliance dashboard'],
-  [admin, '/admin/users', 'Users & roles'],
-  [admin, '/admin/homes', 'Homes & units'],
-  [admin, '/admin/staff', 'Staff'],
-  [admin, '/admin/tasks', 'Tasks'],
-  [admin, '/admin/training', 'Training matrix'],
-  [admin, '/admin/interim-measures', 'Interim measures'],
-  [admin, '/admin/audits', 'Audits'],
-  [admin, '/admin/policies', 'Policies'],
-  [admin, '/admin/audit-log', 'Audit log'],
-  [admin, '/admin/settings', 'Settings'],
+  [responsibleIndividual, '/responsible-individual', 'Compliance dashboard'],
+  [responsibleIndividual, '/responsible-individual/users', 'Users & roles'],
+  [responsibleIndividual, '/responsible-individual/homes', 'Homes & units'],
+  [responsibleIndividual, '/responsible-individual/staff', 'Staff'],
+  [responsibleIndividual, '/responsible-individual/tasks', 'Tasks'],
+  [
+    responsibleIndividual,
+    '/responsible-individual/training',
+    'Training matrix',
+  ],
+  [
+    responsibleIndividual,
+    '/responsible-individual/interim-measures',
+    'Interim measures',
+  ],
+  [responsibleIndividual, '/responsible-individual/audits', 'Audits'],
+  [responsibleIndividual, '/responsible-individual/policies', 'Policies'],
+  [responsibleIndividual, '/responsible-individual/audit-log', 'Audit log'],
+  [responsibleIndividual, '/responsible-individual/settings', 'Settings'],
   [manager, '/manager', 'Compliance dashboard'],
   [manager, '/manager/homes', 'Homes & units'],
   [manager, '/manager/young-people', 'Young people'],
@@ -69,9 +77,9 @@ describe.each(CASES)('%o', (profile, path, heading) => {
   })
 })
 
-it('support workers cannot open admin routes', async () => {
+it('support workers cannot open Responsible Individual routes', async () => {
   const router = createMemoryRouter(routes, {
-    initialEntries: ['/admin/users'],
+    initialEntries: ['/responsible-individual/users'],
   })
   render(
     <QueryClientProvider client={new QueryClient()}>
@@ -114,8 +122,8 @@ function renderAt(profile: Profile, path: string) {
   )
 }
 
-it('shows audits to the admin', async () => {
-  renderAt(admin, '/admin/audits')
+it('shows audits to the Responsible Individual', async () => {
+  renderAt(responsibleIndividual, '/responsible-individual/audits')
   expect(await screen.findByText('Medication audit')).toBeInTheDocument()
 })
 

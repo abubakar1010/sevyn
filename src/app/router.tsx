@@ -21,18 +21,18 @@ import { PoliciesPage } from '@/features/policies/pages/PoliciesPage'
 import { AuditLogPage } from '@/features/audit-log/pages/AuditLogPage'
 import { SettingsPage } from '@/features/settings/pages/SettingsPage'
 
-const adminNav: NavItem[] = [
-  { to: '/admin', label: 'Dashboard' },
-  { to: '/admin/users', label: 'Users' },
-  { to: '/admin/homes', label: 'Homes' },
-  { to: '/admin/staff', label: 'Staff' },
-  { to: '/admin/training', label: 'Training' },
-  { to: '/admin/tasks', label: 'Tasks' },
-  { to: '/admin/interim-measures', label: 'Interim measures' },
-  { to: '/admin/audits', label: 'Audits' },
-  { to: '/admin/policies', label: 'Policies' },
-  { to: '/admin/audit-log', label: 'Audit log' },
-  { to: '/admin/settings', label: 'Settings' },
+const responsibleIndividualNav: NavItem[] = [
+  { to: '/responsible-individual', label: 'Dashboard' },
+  { to: '/responsible-individual/users', label: 'Users' },
+  { to: '/responsible-individual/homes', label: 'Homes' },
+  { to: '/responsible-individual/staff', label: 'Staff' },
+  { to: '/responsible-individual/training', label: 'Training' },
+  { to: '/responsible-individual/tasks', label: 'Tasks' },
+  { to: '/responsible-individual/interim-measures', label: 'Interim measures' },
+  { to: '/responsible-individual/audits', label: 'Audits' },
+  { to: '/responsible-individual/policies', label: 'Policies' },
+  { to: '/responsible-individual/audit-log', label: 'Audit log' },
+  { to: '/responsible-individual/settings', label: 'Settings' },
 ]
 
 const managerNav: NavItem[] = [
@@ -64,11 +64,11 @@ export const routes: RouteObject[] = [
     : []),
   { path: '/', element: <Navigate to="/login" replace /> },
   {
-    path: '/admin',
-    element: <RequireRole roles={['admin']} />,
+    path: '/responsible-individual',
+    element: <RequireRole roles={['responsible_individual']} />,
     children: [
       {
-        element: <AppLayout nav={adminNav} />,
+        element: <AppLayout nav={responsibleIndividualNav} />,
         children: [
           { index: true, element: <CompliancePage /> },
           { path: 'users', element: <UsersPage /> },

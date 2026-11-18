@@ -24,7 +24,7 @@ Scripts: `dev`, `build`, `lint`, `typecheck`, `test`, `format`.
 ## Roles and pages
 Demo users on the login page cover each role.
 
-| Page | Admin (responsible individual) | Registered manager | Support worker |
+| Page | Responsible Individual | Registered manager | Support worker |
 |---|---|---|---|
 | Dashboard (compliance) | yes | yes | yes |
 | Users, Settings | yes | | |

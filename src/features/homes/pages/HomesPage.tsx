@@ -143,7 +143,7 @@ export function HomesPage() {
         title="Homes & units"
         description="Residential homes, their units and current compliance status."
         actions={
-          profile?.role === 'admin' && (
+          profile?.role === 'responsible_individual' && (
             <Button onClick={() => setHomeEditing('new')}>Add home</Button>
           )
         }
@@ -176,7 +176,7 @@ export function HomesPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <RagBadge status={homeStatus(items, h.id)} />
-                      {profile?.role === 'admin' && (
+                      {profile?.role === 'responsible_individual' && (
                         <Button
                           variant="ghost"
                           size="sm"

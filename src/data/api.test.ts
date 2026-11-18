@@ -3,7 +3,7 @@ import * as api from './api'
 import { profile } from './mock'
 import type { HomeInput } from '@/types'
 
-const [admin, manager, worker] = demoUsers
+const [responsibleIndividual, manager, worker] = demoUsers
 
 const homeInput = (over: Partial<HomeInput> = {}): HomeInput => ({
   name: 'New Home',
@@ -38,10 +38,10 @@ describe('write permissions', () => {
       'Not permitted for this home',
     )
   })
-  it('only lets admins edit homes', async () => {
+  it('only lets Responsible Individuals edit homes', async () => {
     await expect(
       api.updateHome(manager, { id: 'h1', ...homeInput() }),
-    ).rejects.toThrow('Only admins')
+    ).rejects.toThrow('Only Responsible Individuals')
   })
 })
 
@@ -68,14 +68,14 @@ describe('quick log editing', () => {
 describe('home profile', () => {
   it('requires an Ofsted URN and a positive capacity', async () => {
     await expect(
-      api.addHome(admin, homeInput({ ofstedUrn: ' ' })),
+      api.addHome(responsibleIndividual, homeInput({ ofstedUrn: ' ' })),
     ).rejects.toThrow('Ofsted URN is required')
     await expect(
-      api.addHome(admin, homeInput({ approvedCapacity: 0 })),
+      api.addHome(responsibleIndividual, homeInput({ approvedCapacity: 0 })),
     ).rejects.toThrow('Approved capacity')
   })
   it('saves the full profile', async () => {
-    await api.updateHome(admin, {
+    await api.updateHome(responsibleIndividual, {
       id: 'h3',
       ...homeInput({
         name: 'Maple Court',
@@ -83,16 +83,16 @@ describe('home profile', () => {
         ageRange: '14-17',
       }),
     })
-    const h = (await api.listHomes(admin)).find((x) => x.id === 'h3')
+    const h = (await api.listHomes(responsibleIndividual)).find((x) => x.id === 'h3')
     expect(h?.ofstedUrn).toBe('SC555555')
     expect(h?.ageRange).toBe('14-17')
   })
 })
 
 describe('audits and policies', () => {
-  it('limits audits to admins', async () => {
+  it('limits audits to Responsible Individuals', async () => {
     expect(await api.listAudits(manager)).toEqual([])
-    expect((await api.listAudits(admin)).length).toBeGreaterThan(0)
+    expect((await api.listAudits(responsibleIndividual)).length).toBeGreaterThan(0)
     await expect(
       api.addAudit(manager, {
         homeId: 'h1',
@@ -101,7 +101,7 @@ describe('audits and policies', () => {
         requiredAction: '',
         expiryDate: null,
       }),
-    ).rejects.toThrow('Admins only')
+    ).rejects.toThrow('Responsible Individuals only')
   })
   it('rejects a next-due date before the audit date and stores feedback', async () => {
     const base = {
@@ -111,14 +111,17 @@ describe('audits and policies', () => {
       requiredAction: '',
     }
     await expect(
-      api.addAudit(admin, { ...base, expiryDate: '2026-01-01' }),
+      api.addAudit(responsibleIndividual, {
+        ...base,
+        expiryDate: '2026-01-01',
+      }),
     ).rejects.toThrow('Next due date')
-    await api.addAudit(admin, {
+    await api.addAudit(responsibleIndividual, {
       ...base,
       expiryDate: '2026-02-08',
       feedbackFileName: 'fridge.pdf',
     })
-    const saved = (await api.listAudits(admin)).find(
+    const saved = (await api.listAudits(responsibleIndividual)).find(
       (a) => a.title === 'Fridge check',
     )
     expect(saved?.expiryDate).toBe('2026-02-08')
@@ -178,8 +181,8 @@ describe('adding a policy', () => {
 describe('archive and delete', () => {
   it('archived staff disappear from lists and the change is audited', async () => {
     await api.archiveStaff(manager, { id: 's3' })
-    expect((await api.listStaff(admin)).some((s) => s.id === 's3')).toBe(false)
-    expect((await api.listAuditLog(admin))[0].action).toBe(
+    expect((await api.listStaff(responsibleIndividual)).some((s) => s.id === 's3')).toBe(false)
+    expect((await api.listAuditLog(responsibleIndividual))[0].action).toBe(
       'Archived staff member',
     )
   })
@@ -224,16 +227,16 @@ describe('validation', () => {
         dueDate: '2026-12-01',
       }),
     ).rejects.toThrow('Title is required')
-    await expect(api.addHome(admin, homeInput({ name: ' ' }))).rejects.toThrow(
-      'Home name is required',
-    )
+    await expect(
+      api.addHome(responsibleIndividual, homeInput({ name: ' ' })),
+    ).rejects.toThrow('Home name is required')
   })
   it('rejects duplicate home names and user emails', async () => {
     await expect(
-      api.addHome(admin, homeInput({ name: 'oakview house' })),
+      api.addHome(responsibleIndividual, homeInput({ name: 'oakview house' })),
     ).rejects.toThrow('already exists')
     await expect(
-      api.saveUser(admin, {
+      api.saveUser(responsibleIndividual, {
         fullName: 'Dup',
         email: 'SAM@example.test',
         role: 'support_worker',
@@ -243,15 +246,15 @@ describe('validation', () => {
   })
   it('validates user email and home assignment', async () => {
     await expect(
-      api.saveUser(admin, {
+      api.saveUser(responsibleIndividual, {
         fullName: 'A',
         email: 'nope',
-        role: 'admin',
+        role: 'responsible_individual',
         homeIds: [],
       }),
     ).rejects.toThrow('valid email')
     await expect(
-      api.saveUser(admin, {
+      api.saveUser(responsibleIndividual, {
         fullName: 'A',
         email: 'a@b.test',
         role: 'support_worker',

@@ -93,7 +93,7 @@ export function countByStatus(items: ComplianceItem[]): Record<Rag, number> {
 
 /** Pages each role can open, so a dashboard item only links somewhere that exists for them. */
 const SECTIONS: Record<Role, string[]> = {
-  admin: ['staff', 'training', 'policies', 'audits'],
+  responsible_individual: ['staff', 'training', 'policies', 'audits'],
   registered_manager: ['staff', 'training', 'policies'],
   support_worker: ['policies'],
 }

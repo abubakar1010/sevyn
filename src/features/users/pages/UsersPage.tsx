@@ -9,13 +9,8 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { QueryState } from '@/components/ui/QueryState'
 import { Table, Td, Th } from '@/components/ui/Table'
 import { useHomes, useSaveUser, useSetUserActive, useUsers } from '@/data/hooks'
+import { ROLE_LABEL } from '@/lib/roles'
 import type { AppUser, Role } from '@/types'
-
-const ROLE_LABEL: Record<Role, string> = {
-  admin: 'Admin',
-  registered_manager: 'Registered Manager',
-  support_worker: 'Support Worker',
-}
 
 type Editing = AppUser | 'new' | null
 
@@ -79,7 +74,7 @@ export function UsersPage() {
                 <Td label="Email">{u.email}</Td>
                 <Td label="Role">{ROLE_LABEL[u.role]}</Td>
                 <Td label="Homes">
-                  {u.role === 'admin'
+                  {u.role === 'responsible_individual'
                     ? 'All homes'
                     : u.homeIds
                         .map((id) => homes.data?.find((h) => h.id === id)?.name)
@@ -176,7 +171,7 @@ export function UsersPage() {
                 </Select>
               )}
             </Field>
-            {role !== 'admin' && (
+            {role !== 'responsible_individual' && (
               <fieldset>
                 <legend className="mb-1.5 text-sm font-medium text-slate-800">
                   Homes this user can access

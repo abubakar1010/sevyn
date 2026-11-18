@@ -1,4 +1,5 @@
-export type Role = 'admin' | 'registered_manager' | 'support_worker'
+export type Role =
+  'responsible_individual' | 'registered_manager' | 'support_worker'
 
 export type Rag = 'red' | 'amber' | 'green'
 
@@ -7,7 +8,7 @@ export interface Profile {
   organisationId: string
   role: Role
   fullName: string
-  /** Homes this user may access. Empty for admins (all homes in the organisation). */
+  /** Homes this user may access. Empty for Responsible Individuals (all homes in the organisation). */
   homeIds: string[]
 }
 

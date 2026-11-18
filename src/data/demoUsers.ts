@@ -3,10 +3,10 @@ import type { Profile } from '@/types'
 /** Fictional demo-tenant users for previewing each role without a backend. */
 export const demoUsers: Profile[] = [
   {
-    id: 'u-admin',
+    id: 'u-ri',
     organisationId: 'demo-org',
-    role: 'admin',
-    fullName: 'Demo Admin',
+    role: 'responsible_individual',
+    fullName: 'Demo Responsible Individual',
     homeIds: [],
   },
   {

@@ -424,10 +424,10 @@ export const auditLog: AuditEntry[] = [
 
 export const appUsers: AppUser[] = [
   {
-    id: 'u-admin',
-    fullName: 'Demo Admin',
-    email: 'admin@example.test',
-    role: 'admin',
+    id: 'u-ri',
+    fullName: 'Demo Responsible Individual',
+    email: 'ri@example.test',
+    role: 'responsible_individual',
     homeIds: [],
     active: true,
   },
