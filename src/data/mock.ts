@@ -1,3 +1,4 @@
+import { DEFAULT_DOCUMENT_CATEGORIES } from '@/features/documents/categories'
 import type {
   AppUser,
   Audit,
@@ -460,6 +461,7 @@ export const appUsers: AppUser[] = [
 export const orgSettings: OrgSettings = {
   name: 'Demo Care Group',
   amberDays: 30,
+  documentCategories: structuredClone(DEFAULT_DOCUMENT_CATEGORIES),
 }
 
 export const audits: Audit[] = [

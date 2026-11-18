@@ -190,3 +190,17 @@ it("lets a support worker upload to a young person's file but not delete", async
     screen.queryByRole('button', { name: /^Delete/ }),
   ).not.toBeInTheDocument()
 })
+
+it('lets the Responsible Individual rename a document category in Settings', async () => {
+  renderAt(responsibleIndividual, '/responsible-individual/settings')
+  const box = await screen.findByLabelText('Staff files category name', {
+    selector: '[value="Contract"]',
+  })
+  await userEvent.clear(box)
+  await userEvent.type(box, 'Employment contract')
+  await userEvent.click(
+    screen.getByRole('button', { name: 'Save staff files categories' }),
+  )
+  expect(await screen.findByText('Saved')).toBeInTheDocument()
+  expect(screen.getByDisplayValue('Employment contract')).toBeInTheDocument()
+})

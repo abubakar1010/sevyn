@@ -6,6 +6,7 @@ import { Field, Input } from '@/components/ui/Field'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { QueryState } from '@/components/ui/QueryState'
 import { useSaveSettings, useSettings } from '@/data/hooks'
+import { DocumentCategoriesCard } from '../DocumentCategoriesCard'
 
 export function SettingsPage() {
   const settings = useSettings()
@@ -24,7 +25,7 @@ export function SettingsPage() {
     <>
       <PageHeader
         title="Settings"
-        description="Organisation settings and compliance rules."
+        description="Organisation settings, compliance rules and how your files are organised."
       />
       <QueryState queries={[settings]}>
         {settings.data && (
@@ -79,6 +80,37 @@ export function SettingsPage() {
               </div>
             </form>
           </Card>
+        )}
+        {settings.data && (
+          <section aria-label="Document categories" className="mt-8">
+            <h2 className="text-lg font-semibold">Document categories</h2>
+            <p className="mb-4 max-w-2xl text-sm text-slate-600">
+              Name the categories your teams file documents under. Renaming a
+              category updates the documents already filed under it; removing
+              one keeps its documents, but it is no longer offered for new
+              uploads.
+            </p>
+            <div className="grid gap-4 lg:grid-cols-3">
+              <DocumentCategoriesCard
+                ownerType="home"
+                title="Homes"
+                description="Documents held on each home."
+                categories={settings.data.documentCategories.home}
+              />
+              <DocumentCategoriesCard
+                ownerType="staff"
+                title="Staff files"
+                description="Documents held on each staff member."
+                categories={settings.data.documentCategories.staff}
+              />
+              <DocumentCategoriesCard
+                ownerType="young_person"
+                title="Young people"
+                description="Documents held on each young person."
+                categories={settings.data.documentCategories.young_person}
+              />
+            </div>
+          </section>
         )}
       </QueryState>
     </>

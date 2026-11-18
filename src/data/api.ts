@@ -4,6 +4,7 @@ import type {
   Policy,
   AuditEntry,
   OrgSettings,
+  DocumentOwner,
   DocumentRecord,
   Home,
   HomeInput,
@@ -444,9 +445,12 @@ export async function setUserActive(
 }
 
 export const getSettings = (): Promise<OrgSettings> =>
-  delay({ ...mock.orgSettings })
+  delay(structuredClone(mock.orgSettings))
 
-export async function saveSettings(profile: Profile, input: OrgSettings) {
+export async function saveSettings(
+  profile: Profile,
+  input: Pick<OrgSettings, 'name' | 'amberDays'>,
+) {
   assertResponsibleIndividual(profile)
   if (
     !Number.isInteger(input.amberDays) ||
@@ -456,6 +460,56 @@ export async function saveSettings(profile: Profile, input: OrgSettings) {
     throw new Error('Invalid amber window')
   Object.assign(mock.orgSettings, input)
   audit(profile, 'Updated settings', input.name)
+  return delay(true)
+}
+
+const OWNER_LABEL: Record<DocumentOwner, string> = {
+  home: 'home documents',
+  staff: 'staff files',
+  young_person: "young people's files",
+}
+const MAX_CATEGORY_LENGTH = 60
+
+/**
+ * Replaces the company's document categories for one kind of file. `was` carries the
+ * previous name of a renamed category so documents already filed under it follow the
+ * rename. Removing a category never deletes documents; they keep their label.
+ */
+export async function saveDocumentCategories(
+  profile: Profile,
+  input: {
+    ownerType: DocumentOwner
+    categories: { name: string; was?: string }[]
+  },
+) {
+  assertResponsibleIndividual(profile)
+  const categories = input.categories.map((c) => ({
+    ...c,
+    name: c.name.trim().replace(/\s+/g, ' '),
+  }))
+  if (categories.length === 0) throw new Error('Keep at least one category')
+  for (const [i, c] of categories.entries()) {
+    requireText(c.name, 'Category name')
+    if (c.name.length > MAX_CATEGORY_LENGTH)
+      throw new Error(
+        `Category names can be at most ${MAX_CATEGORY_LENGTH} characters`,
+      )
+    if (categories.findIndex((o) => sameName(o.name, c.name)) !== i)
+      throw new Error(`"${c.name}" is used more than once`)
+  }
+  const current = mock.orgSettings.documentCategories[input.ownerType]
+  const renames = categories.filter(
+    (c) => c.was !== undefined && c.was !== c.name && current.includes(c.was),
+  )
+  for (const d of mock.documents)
+    if (d.ownerType === input.ownerType) {
+      const rename = renames.find((r) => r.was === d.category)
+      if (rename) d.category = rename.name
+    }
+  mock.orgSettings.documentCategories[input.ownerType] = categories.map(
+    (c) => c.name,
+  )
+  audit(profile, 'Updated document categories', OWNER_LABEL[input.ownerType])
   return delay(true)
 }
 

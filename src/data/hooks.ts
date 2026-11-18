@@ -76,6 +76,9 @@ export const useSetUserActive = () =>
 export const useSaveSettings = () =>
   useWrite(api.saveSettings, ['settings', ...AUDIT])
 
+export const useSaveDocumentCategories = () =>
+  useWrite(api.saveDocumentCategories, ['settings', 'documents', ...AUDIT])
+
 /** Organisation's amber window in days; falls back to 30 until settings load. */
 export const useAmberDays = () => useSettings().data?.amberDays ?? 30
 

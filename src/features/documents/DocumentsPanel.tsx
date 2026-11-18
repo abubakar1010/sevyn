@@ -6,11 +6,16 @@ import { Field, Input, Select } from '@/components/ui/Field'
 import { FormError } from '@/components/ui/FormError'
 import { Modal } from '@/components/ui/Modal'
 import { QueryState } from '@/components/ui/QueryState'
-import { useAddDocument, useDeleteDocument, useDocuments } from '@/data/hooks'
+import {
+  useAddDocument,
+  useDeleteDocument,
+  useDocuments,
+  useSettings,
+} from '@/data/hooks'
 import { formatDate } from '@/lib/format'
 import { useCanEdit } from '@/lib/useCanEdit'
 import type { DocumentOwner, DocumentRecord } from '@/types'
-import { DOCUMENT_CATEGORIES } from './categories'
+import { DEFAULT_DOCUMENT_CATEGORIES } from './categories'
 
 /** Documents filed against one home, staff member or young person, grouped by category. */
 export function DocumentsPanel({
@@ -30,12 +35,21 @@ export function DocumentsPanel({
   const remove = useDeleteDocument()
   const [uploadOpen, setUploadOpen] = useState(false)
   const [deleting, setDeleting] = useState<DocumentRecord | null>(null)
-  const categories = DOCUMENT_CATEGORIES[ownerType]
+  const settings = useSettings()
+  const categories =
+    settings.data?.documentCategories[ownerType] ??
+    DEFAULT_DOCUMENT_CATEGORIES[ownerType]
 
   const mine = (docs.data ?? []).filter(
     (d) => d.ownerType === ownerType && d.ownerId === ownerId,
   )
-  const used = categories.filter((c) => mine.some((d) => d.category === c))
+  // Documents filed under a category the company has since removed stay visible.
+  const used = [
+    ...categories,
+    ...new Set(
+      mine.map((d) => d.category).filter((c) => !categories.includes(c)),
+    ),
+  ].filter((c) => mine.some((d) => d.category === c))
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()

@@ -350,3 +350,82 @@ describe('support worker document uploads', () => {
     ).toBe(true)
   })
 })
+
+describe('customisable document categories', () => {
+  const names = (list: { name: string }[]) => list.map((c) => c.name)
+
+  it('lets only the Responsible Individual change categories', async () => {
+    const input = {
+      ownerType: 'staff' as const,
+      categories: [{ name: 'Contract' }],
+    }
+    await expect(api.saveDocumentCategories(manager, input)).rejects.toThrow(
+      'Responsible Individuals only',
+    )
+    await expect(api.saveDocumentCategories(worker, input)).rejects.toThrow(
+      'Responsible Individuals only',
+    )
+  })
+
+  it('validates names', async () => {
+    const save = (categories: { name: string }[]) =>
+      api.saveDocumentCategories(responsibleIndividual, {
+        ownerType: 'home',
+        categories,
+      })
+    await expect(save([])).rejects.toThrow('Keep at least one category')
+    await expect(save([{ name: '  ' }])).rejects.toThrow(
+      'Category name is required',
+    )
+    await expect(save([{ name: 'Fire' }, { name: ' fire ' }])).rejects.toThrow(
+      'used more than once',
+    )
+    await expect(save([{ name: 'x'.repeat(61) }])).rejects.toThrow('at most 60')
+  })
+
+  it('saves company categories, moves renamed documents and keeps removed ones', async () => {
+    const before = (await api.getSettings()).documentCategories.home
+    await api.saveDocumentCategories(responsibleIndividual, {
+      ownerType: 'home',
+      categories: [
+        { name: ' Fire   safety ', was: 'Fire risk assessment' },
+        { name: 'Local authority visits' },
+      ],
+    })
+    const after = (await api.getSettings()).documentCategories
+    expect(after.home).toEqual(['Fire safety', 'Local authority visits'])
+    // other file types are untouched
+    expect(after.staff.length).toBeGreaterThan(1)
+
+    const docs = await api.listDocuments(responsibleIndividual)
+    // renamed category carries its documents across
+    expect(docs.find((d) => d.id === 'd2')?.category).toBe('Fire safety')
+    // a removed category keeps its documents
+    expect(docs.find((d) => d.id === 'd1')?.category).toBe('Other')
+    expect((await api.listAuditLog(responsibleIndividual))[0].action).toBe(
+      'Updated document categories',
+    )
+
+    // restore for other tests
+    await api.saveDocumentCategories(responsibleIndividual, {
+      ownerType: 'home',
+      categories: before.map((name) => ({
+        name,
+        was: name === 'Fire risk assessment' ? 'Fire safety' : undefined,
+      })),
+    })
+    expect(names(before.map((name) => ({ name })))).toEqual(
+      (await api.getSettings()).documentCategories.home,
+    )
+  })
+
+  it('keeps categories when other settings are saved', async () => {
+    await api.saveSettings(responsibleIndividual, {
+      name: 'Demo Care Group',
+      amberDays: 30,
+    })
+    expect(
+      (await api.getSettings()).documentCategories.young_person.length,
+    ).toBeGreaterThan(1)
+  })
+})

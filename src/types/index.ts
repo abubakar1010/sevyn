@@ -160,7 +160,7 @@ export interface DocumentRecord {
   ownerType: DocumentOwner
   ownerId: string
   title: string
-  /** Chosen from the fixed category list for the owner type. */
+  /** Chosen from the company's category list for the owner type. */
   category: string
   fileName: string
   uploadedAt: string
@@ -190,6 +190,8 @@ export interface OrgSettings {
   name: string
   /** Days before expiry that a compliance item turns amber. */
   amberDays: number
+  /** Document categories per file type; each company names its own. */
+  documentCategories: Record<DocumentOwner, string[]>
 }
 
 export interface Audit {
