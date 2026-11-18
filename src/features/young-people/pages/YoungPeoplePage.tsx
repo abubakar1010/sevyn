@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { useAuth } from '@/app/useAuth'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
@@ -26,6 +27,7 @@ import { PROFILE_GROUPS } from '../profileFields'
 type Editing = YoungPerson | 'new' | null
 
 export function YoungPeoplePage() {
+  const { profile } = useAuth()
   const canEdit = useCanEdit()
   const { enabled: ofsted } = useOfstedMode()
   const people = useYoungPeople()
@@ -63,7 +65,11 @@ export function YoungPeoplePage() {
     <>
       <PageHeader
         title="Young people"
-        description="Records for young people in your assigned homes."
+        description={
+          profile?.role === 'responsible_individual'
+            ? 'Records for every young person across all homes, including restricted files.'
+            : 'Records for young people in your assigned homes.'
+        }
         actions={
           canEdit && (
             <Button onClick={() => setEditing('new')}>Add young person</Button>

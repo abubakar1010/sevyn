@@ -83,7 +83,9 @@ describe('home profile', () => {
         ageRange: '14-17',
       }),
     })
-    const h = (await api.listHomes(responsibleIndividual)).find((x) => x.id === 'h3')
+    const h = (await api.listHomes(responsibleIndividual)).find(
+      (x) => x.id === 'h3',
+    )
     expect(h?.ofstedUrn).toBe('SC555555')
     expect(h?.ageRange).toBe('14-17')
   })
@@ -92,7 +94,9 @@ describe('home profile', () => {
 describe('audits and policies', () => {
   it('limits audits to Responsible Individuals', async () => {
     expect(await api.listAudits(manager)).toEqual([])
-    expect((await api.listAudits(responsibleIndividual)).length).toBeGreaterThan(0)
+    expect(
+      (await api.listAudits(responsibleIndividual)).length,
+    ).toBeGreaterThan(0)
     await expect(
       api.addAudit(manager, {
         homeId: 'h1',
@@ -181,7 +185,9 @@ describe('adding a policy', () => {
 describe('archive and delete', () => {
   it('archived staff disappear from lists and the change is audited', async () => {
     await api.archiveStaff(manager, { id: 's3' })
-    expect((await api.listStaff(responsibleIndividual)).some((s) => s.id === 's3')).toBe(false)
+    expect(
+      (await api.listStaff(responsibleIndividual)).some((s) => s.id === 's3'),
+    ).toBe(false)
     expect((await api.listAuditLog(responsibleIndividual))[0].action).toBe(
       'Archived staff member',
     )
@@ -285,5 +291,16 @@ describe('validation', () => {
         ...profile(),
       }),
     ).rejects.toThrow('future')
+  })
+})
+
+describe('young people oversight', () => {
+  it('shows every young person, restricted files included, to the Responsible Individual', async () => {
+    const ri = await api.listYoungPeople(responsibleIndividual)
+    const restricted = ri.find((y) => y.restricted)
+    expect(restricted).toBeDefined()
+    expect(new Set(ri.map((y) => y.homeId)).size).toBeGreaterThan(1)
+    const workerIds = (await api.listYoungPeople(worker)).map((y) => y.id)
+    expect(workerIds).not.toContain(restricted!.id)
   })
 })

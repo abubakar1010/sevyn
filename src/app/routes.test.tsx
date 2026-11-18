@@ -16,6 +16,11 @@ const CASES: [Profile, string, string][] = [
   [responsibleIndividual, '/responsible-individual/users', 'Users & roles'],
   [responsibleIndividual, '/responsible-individual/homes', 'Homes & units'],
   [responsibleIndividual, '/responsible-individual/staff', 'Staff'],
+  [
+    responsibleIndividual,
+    '/responsible-individual/young-people',
+    'Young people',
+  ],
   [responsibleIndividual, '/responsible-individual/tasks', 'Tasks'],
   [
     responsibleIndividual,
