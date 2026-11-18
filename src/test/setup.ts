@@ -16,3 +16,12 @@ Object.defineProperty(window, 'localStorage', {
     },
   } satisfies Storage,
 })
+
+// jsdom does not implement <dialog> modal methods, which the Modal component uses.
+HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+  this.setAttribute('open', '')
+}
+HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
+  this.removeAttribute('open')
+  this.dispatchEvent(new Event('close'))
+}
