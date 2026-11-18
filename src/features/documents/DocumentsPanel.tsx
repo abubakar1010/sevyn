@@ -23,6 +23,8 @@ export function DocumentsPanel({
   homeId: string
 }) {
   const canEdit = useCanEdit()
+  // Support workers may add to a young person's file but cannot delete anything.
+  const canUpload = canEdit || ownerType === 'young_person'
   const docs = useDocuments()
   const add = useAddDocument()
   const remove = useDeleteDocument()
@@ -57,7 +59,7 @@ export function DocumentsPanel({
     <section aria-label="Documents" className="mt-6">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="text-base font-semibold">Documents</h3>
-        {canEdit && (
+        {canUpload && (
           <Button size="sm" onClick={() => setUploadOpen(true)}>
             Upload document
           </Button>

@@ -337,15 +337,39 @@ export async function setTaskDone(
   return delay(true)
 }
 
-export const listDocuments = (profile: Profile): Promise<DocumentRecord[]> =>
-  delay(mock.documents.filter((d) => canSee(profile, d.homeId)))
+export async function listDocuments(
+  profile: Profile,
+): Promise<DocumentRecord[]> {
+  // Support workers only ever see young people's documents, and only for young
+  // people they can open (assigned home, not restricted).
+  const visibleYoungPeople =
+    profile.role === 'support_worker'
+      ? new Set((await listYoungPeople(profile)).map((y) => y.id))
+      : null
+  return delay(
+    mock.documents.filter(
+      (d) =>
+        canSee(profile, d.homeId) &&
+        (!visibleYoungPeople ||
+          (d.ownerType === 'young_person' &&
+            visibleYoungPeople.has(d.ownerId))),
+    ),
+  )
+}
 
 export async function addDocument(
   profile: Profile,
   input: Omit<DocumentRecord, 'id' | 'uploadedAt'>,
 ) {
   requireText(input.title, 'Title')
-  assertCanWrite(profile, input.homeId)
+  if (profile.role === 'support_worker') {
+    // Support workers may upload to a young person's file they can open, nothing else.
+    const yp = (await listYoungPeople(profile)).find(
+      (y) => y.id === input.ownerId,
+    )
+    if (input.ownerType !== 'young_person' || !yp || yp.homeId !== input.homeId)
+      throw new Error('Not permitted')
+  } else assertCanWrite(profile, input.homeId)
   mock.documents.push({
     id: newId(),
     uploadedAt: mock.daysFromNow(0),

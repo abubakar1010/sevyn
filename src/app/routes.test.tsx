@@ -175,3 +175,18 @@ it('summarises who is ready to work and filters the staff list', async () => {
     screen.queryByRole('button', { name: 'Open staff file for Jordan Lee' }),
   ).not.toBeInTheDocument()
 })
+
+it("lets a support worker upload to a young person's file but not delete", async () => {
+  renderAt(worker, '/worker/young-people')
+  await userEvent.click(
+    await screen.findByRole('button', {
+      name: 'Open file for Demo Young Person One',
+    }),
+  )
+  expect(
+    await screen.findByRole('button', { name: 'Upload document' }),
+  ).toBeInTheDocument()
+  expect(
+    screen.queryByRole('button', { name: /^Delete/ }),
+  ).not.toBeInTheDocument()
+})

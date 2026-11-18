@@ -304,3 +304,49 @@ describe('young people oversight', () => {
     expect(workerIds).not.toContain(restricted!.id)
   })
 })
+
+describe('support worker document uploads', () => {
+  const doc = (over: Record<string, unknown> = {}) => ({
+    homeId: 'h1',
+    ownerType: 'young_person' as const,
+    ownerId: 'y1',
+    title: 'Letter from school',
+    category: 'Letters',
+    fileName: 'letter.pdf',
+    ...over,
+  })
+
+  it("lets a support worker upload to a young person's file they can open", async () => {
+    await api.addDocument(worker, doc())
+    const docs = await api.listDocuments(worker)
+    expect(docs.some((d) => d.title === 'Letter from school')).toBe(true)
+    expect((await api.listAuditLog(manager))[0].action).toBe(
+      'Uploaded document',
+    )
+  })
+  it('blocks uploads to home or staff files, other homes and restricted young people', async () => {
+    const notPermitted = 'Not permitted'
+    await expect(
+      api.addDocument(worker, doc({ ownerType: 'home', ownerId: 'h1' })),
+    ).rejects.toThrow(notPermitted)
+    await expect(
+      api.addDocument(worker, doc({ ownerType: 'staff', ownerId: 's1' })),
+    ).rejects.toThrow(notPermitted)
+    await expect(
+      api.addDocument(worker, doc({ ownerId: 'y3', homeId: 'h2' })),
+    ).rejects.toThrow(notPermitted)
+    await expect(
+      api.addDocument(worker, doc({ ownerId: 'y2' })),
+    ).rejects.toThrow(notPermitted)
+    await expect(
+      api.addDocument(worker, doc({ ownerId: 'y1', homeId: 'h2' })),
+    ).rejects.toThrow(notPermitted)
+  })
+  it('only shows support workers young people documents', async () => {
+    const docs = await api.listDocuments(worker)
+    expect(docs.every((d) => d.ownerType === 'young_person')).toBe(true)
+    expect(
+      (await api.listDocuments(manager)).some((d) => d.ownerType === 'home'),
+    ).toBe(true)
+  })
+})
