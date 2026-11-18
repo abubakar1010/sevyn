@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { addInterimMeasure } from '@/data/api'
+import { OfstedModeProvider } from '@/features/ofsted-mode/OfstedModeProvider'
 import { demoUsers } from '@/data/demoUsers'
 import type { Profile } from '@/types'
 import { AuthContext } from './useAuth'
@@ -13,6 +14,7 @@ const [responsibleIndividual, manager, worker] = demoUsers
 // Every role's routes must render their page heading with demo data and no runtime errors.
 const CASES: [Profile, string, string][] = [
   [responsibleIndividual, '/responsible-individual', 'Compliance dashboard'],
+  [responsibleIndividual, '/responsible-individual/ofsted', 'Ofsted Mode'],
   [responsibleIndividual, '/responsible-individual/users', 'Users & roles'],
   [responsibleIndividual, '/responsible-individual/homes', 'Homes & units'],
   [responsibleIndividual, '/responsible-individual/staff', 'Staff'],
@@ -96,7 +98,9 @@ it('support workers cannot open Responsible Individual routes', async () => {
           signInAs: () => {},
         }}
       >
-        <RouterProvider router={router} />
+        <OfstedModeProvider>
+          <RouterProvider router={router} />
+        </OfstedModeProvider>
       </AuthContext>
     </QueryClientProvider>,
   )
@@ -121,7 +125,9 @@ function renderAt(profile: Profile, path: string) {
           signInAs: () => {},
         }}
       >
-        <RouterProvider router={router} />
+        <OfstedModeProvider>
+          <RouterProvider router={router} />
+        </OfstedModeProvider>
       </AuthContext>
     </QueryClientProvider>,
   )
@@ -222,4 +228,55 @@ it('charts Quick Log ratings on the dashboard for each role', async () => {
     ).toBeInTheDocument()
     unmount()
   }
+})
+
+it('gives the Responsible Individual an inspection pack per home with links to the evidence', async () => {
+  renderAt(responsibleIndividual, '/responsible-individual/ofsted')
+  expect(
+    await screen.findByRole('heading', { name: 'Oakview House' }),
+  ).toBeInTheDocument()
+  expect(screen.getByText('SC100001')).toBeInTheDocument()
+  const navigator = within(
+    screen.getByRole('region', { name: 'Inspection navigator' }),
+  )
+  expect(navigator.getByRole('link', { name: /Staff files/ })).toHaveAttribute(
+    'href',
+    '/responsible-individual/staff',
+  )
+  expect(navigator.getByRole('link', { name: /Young people/ })).toHaveAttribute(
+    'href',
+    '/responsible-individual/young-people',
+  )
+  await userEvent.selectOptions(screen.getByLabelText('Home'), 'h2')
+  expect(
+    screen.queryByRole('heading', { name: 'Oakview House' }),
+  ).not.toBeInTheDocument()
+})
+
+it('offers the Ofsted Mode switch to Responsible Individuals and managers, not support workers', async () => {
+  for (const [user, path, expected] of [
+    [responsibleIndividual, '/responsible-individual', true],
+    [manager, '/manager', true],
+    [worker, '/worker', false],
+  ] as const) {
+    const { unmount } = renderAt(user, path)
+    await screen.findByRole('navigation', { name: 'Main' })
+    expect(
+      screen.queryAllByRole('button', { name: /Ofsted Mode: Off/ }).length > 0,
+    ).toBe(expected)
+    unmount()
+  }
+})
+
+it('masks young people�s names for the Responsible Individual when Ofsted Mode is on', async () => {
+  renderAt(responsibleIndividual, '/responsible-individual/young-people')
+  await screen.findByRole('button', {
+    name: 'Open file for Demo Young Person One',
+  })
+  await userEvent.click(
+    screen.getAllByRole('button', { name: /Ofsted Mode: Off/ })[0],
+  )
+  expect(
+    await screen.findByRole('button', { name: 'Open file for A.B.' }),
+  ).toBeInTheDocument()
 })

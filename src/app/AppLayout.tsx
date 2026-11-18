@@ -27,14 +27,14 @@ export function AppLayout({ nav }: { nav: NavItem[] }) {
   const org = useSettings().data?.name
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
+    <div className="flex min-h-screen flex-col md:flex-row print:block print:min-h-0">
       {/* Mobile header */}
-      <header className="sticky top-0 z-30 order-1 flex items-center justify-between bg-primary-950 px-4 py-2.5 text-white md:hidden">
+      <header className="sticky top-0 z-30 order-1 flex items-center justify-between bg-primary-950 px-4 py-2.5 text-white md:hidden print:hidden">
         <Logo />
         <HeaderActions dark showOfsted={false} />
       </header>
 
-      <aside className="relative order-2 overflow-hidden bg-linear-to-b from-primary-950 via-primary-900 to-[oklch(0.3_0.13_290)] text-white md:sticky md:top-0 md:order-none md:flex md:h-screen md:w-64 md:shrink-0 md:flex-col">
+      <aside className="relative order-2 print:hidden overflow-hidden bg-linear-to-b from-primary-950 via-primary-900 to-[oklch(0.3_0.13_290)] text-white md:sticky md:top-0 md:order-none md:flex md:h-screen md:w-64 md:shrink-0 md:flex-col">
         <div
           aria-hidden
           className="pointer-events-none absolute -top-16 -right-16 hidden size-56 animate-float rounded-full bg-accent-500/30 blur-3xl md:block"
@@ -75,7 +75,7 @@ export function AppLayout({ nav }: { nav: NavItem[] }) {
       </aside>
 
       <div className="order-3 min-w-0 flex-1 md:order-none">
-        <header className="sticky top-0 z-20 hidden items-center justify-between border-b border-line bg-surface/75 px-8 py-3 backdrop-blur-md md:flex">
+        <header className="sticky top-0 z-20 hidden items-center justify-between border-b border-line bg-surface/75 px-8 py-3 backdrop-blur-md md:flex print:hidden">
           <div className="leading-tight">
             <p className="font-display text-lg font-semibold text-primary-950 dark:text-white">
               {org ?? 'Sevyn'}
@@ -94,7 +94,7 @@ export function AppLayout({ nav }: { nav: NavItem[] }) {
             Ofsted Mode is on — personal details are masked
           </div>
         )}
-        <main key={pathname} className="animate-fade-up p-4 md:p-8">
+        <main key={pathname} className="animate-fade-up p-4 md:p-8 print:p-0">
           <Outlet />
         </main>
       </div>

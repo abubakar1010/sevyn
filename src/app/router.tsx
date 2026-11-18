@@ -19,10 +19,12 @@ import { TrainingPage } from '@/features/training/pages/TrainingPage'
 import { InterimMeasuresPage } from '@/features/interim-measures/pages/InterimMeasuresPage'
 import { PoliciesPage } from '@/features/policies/pages/PoliciesPage'
 import { AuditLogPage } from '@/features/audit-log/pages/AuditLogPage'
+import { OfstedModePage } from '@/features/ofsted-mode/pages/OfstedModePage'
 import { SettingsPage } from '@/features/settings/pages/SettingsPage'
 
 const responsibleIndividualNav: NavItem[] = [
   { to: '/responsible-individual', label: 'Dashboard' },
+  { to: '/responsible-individual/ofsted', label: 'Ofsted Mode' },
   { to: '/responsible-individual/users', label: 'Users' },
   { to: '/responsible-individual/homes', label: 'Homes' },
   { to: '/responsible-individual/staff', label: 'Staff' },
@@ -72,6 +74,7 @@ export const routes: RouteObject[] = [
         element: <AppLayout nav={responsibleIndividualNav} />,
         children: [
           { index: true, element: <CompliancePage /> },
+          { path: 'ofsted', element: <OfstedModePage /> },
           { path: 'users', element: <UsersPage /> },
           { path: 'homes', element: <HomesPage /> },
           { path: 'staff', element: <StaffPage /> },

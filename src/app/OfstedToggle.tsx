@@ -2,7 +2,7 @@ import { useOfstedMode } from '@/features/ofsted-mode/useOfstedMode'
 import { cn } from '@/lib/cn'
 import { useAuth } from './useAuth'
 
-/** Registered Managers' privacy switch; renders nothing for other roles. */
+/** Privacy switch for Registered Managers and Responsible Individuals; renders nothing for support workers. */
 export function OfstedToggle({
   dark = false,
   className,
@@ -12,7 +12,7 @@ export function OfstedToggle({
 }) {
   const { profile } = useAuth()
   const { enabled, toggle } = useOfstedMode()
-  if (profile?.role !== 'registered_manager') return null
+  if (!profile || profile.role === 'support_worker') return null
   return (
     <button
       onClick={toggle}
