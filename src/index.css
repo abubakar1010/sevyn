@@ -257,3 +257,15 @@
   --series-5: #d55181;
   --series-6: #008300;
 }
+
+/* Quick-log analytics: diverging pair (validated) with a neutral midpoint, one set per theme. */
+.rating-root {
+  --rating-declined: #eb6834;
+  --rating-none: #c9c8c4;
+  --rating-progress: #2a78d6;
+}
+.dark .rating-root {
+  --rating-declined: #d95926;
+  --rating-none: #4a4a47;
+  --rating-progress: #3987e5;
+}

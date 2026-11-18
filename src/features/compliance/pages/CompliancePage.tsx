@@ -14,6 +14,7 @@ import {
   usePolicies,
   useAudits,
 } from '@/data/hooks'
+import { QuickLogAnalytics } from '@/features/quick-logs/QuickLogAnalytics'
 import { formatDate } from '@/lib/format'
 import type { Rag } from '@/types'
 import {
@@ -91,6 +92,8 @@ export function CompliancePage() {
           <StatTile key={s} status={s} count={counts[s]} />
         ))}
       </section>
+
+      <QuickLogAnalytics />
 
       <h2 className="mt-8 mb-3 text-lg font-semibold">Homes</h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

@@ -111,7 +111,7 @@ it('support workers cannot open Responsible Individual routes', async () => {
 
 function renderAt(profile: Profile, path: string) {
   const router = createMemoryRouter(routes, { initialEntries: [path] })
-  render(
+  return render(
     <QueryClientProvider client={new QueryClient()}>
       <AuthContext
         value={{
@@ -203,4 +203,23 @@ it('lets the Responsible Individual rename a document category in Settings', asy
   )
   expect(await screen.findByText('Saved')).toBeInTheDocument()
   expect(screen.getByDisplayValue('Employment contract')).toBeInTheDocument()
+})
+
+it('charts Quick Log ratings on the dashboard for each role', async () => {
+  for (const [user, path] of [
+    [responsibleIndividual, '/responsible-individual'],
+    [manager, '/manager'],
+    [worker, '/worker'],
+  ] as const) {
+    const { unmount } = renderAt(user, path)
+    expect(
+      await screen.findByRole('heading', { name: 'Quick log progress' }),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('img', {
+        name: /Emotional Wellbeing: \d+ progressing, \d+ no change, \d+ declined/,
+      }),
+    ).toBeInTheDocument()
+    unmount()
+  }
 })
