@@ -268,7 +268,7 @@ it('offers the Ofsted Mode switch to Responsible Individuals and managers, not s
   }
 })
 
-it('masks young people's names for the Responsible Individual when Ofsted Mode is on', async () => {
+it('masks young peoples names for the Responsible Individual when Ofsted Mode is on', async () => {
   renderAt(responsibleIndividual, '/responsible-individual/young-people')
   await screen.findByRole('button', {
     name: 'Open file for Demo Young Person One',
