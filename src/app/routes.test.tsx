@@ -340,3 +340,58 @@ describe('home profile fields in Settings', () => {
     expect(region().getByText('Retired')).toBeInTheDocument()
   })
 })
+
+describe('company home fields on the Homes page', () => {
+  it('lets the Responsible Individual edit a home’s custom values', async () => {
+    renderAt(responsibleIndividual, '/responsible-individual/homes')
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Edit Oakview House' }),
+    )
+    const marshal = await screen.findByLabelText('Fire marshal')
+    expect(marshal).toHaveValue('Jordan Lee')
+    expect(screen.getByLabelText('Sprinkler system fitted')).toHaveValue('yes')
+    await userEvent.clear(marshal)
+    await userEvent.type(marshal, 'Sam Patel')
+    await userEvent.click(screen.getByRole('button', { name: 'Save home' }))
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Oakview House' }),
+    )
+    const detail = within(
+      await screen.findByRole('region', { name: 'Premises & safety' }),
+    )
+    expect(detail.getByText('Sam Patel')).toBeInTheDocument()
+  })
+
+  it('shows the fields, but not the way to change them, to a Registered Manager', async () => {
+    renderAt(manager, '/manager/homes')
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Oakview House' }),
+    )
+    const detail = within(
+      await screen.findByRole('region', { name: 'Premises & safety' }),
+    )
+    expect(detail.getByText('Sprinkler system fitted')).toBeInTheDocument()
+    expect(detail.getByText('Yes')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'Customise home fields' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Edit Oakview House' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('links the Responsible Individual to the field settings', async () => {
+    renderAt(responsibleIndividual, '/responsible-individual/homes')
+    expect(
+      await screen.findByRole('link', { name: 'Customise home fields' }),
+    ).toHaveAttribute('href', '/responsible-individual/settings')
+  })
+
+  it('includes the fields in the Ofsted Mode pack', async () => {
+    renderAt(responsibleIndividual, '/responsible-individual/ofsted')
+    const section = within(
+      await screen.findByRole('region', { name: 'Premises & safety' }),
+    )
+    expect(section.getByText('Insurance renewal date')).toBeInTheDocument()
+  })
+})

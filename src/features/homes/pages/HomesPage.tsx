@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '@/app/useAuth'
 import { Button } from '@/components/ui/Button'
 import { FormError } from '@/components/ui/FormError'
@@ -22,8 +23,12 @@ import {
   useUpdateHome,
   useAmberDays,
   useAudits,
+  useHomeFields,
 } from '@/data/hooks'
 import { DocumentsPanel } from '@/features/documents/DocumentsPanel'
+import { CustomFieldInputs } from '@/features/homes/CustomFieldInputs'
+import { readCustomValues } from '@/features/homes/customFields'
+import { CustomFieldValues } from '@/features/homes/CustomFieldValues'
 import { useCanEdit } from '@/lib/useCanEdit'
 import type { Home, HomeInput, Unit } from '@/types'
 import {
@@ -86,6 +91,7 @@ export function HomesPage() {
   const measures = useInterimMeasures()
   const amberDays = useAmberDays()
   const audits = useAudits()
+  const homeFields = useHomeFields()
   const addHome = useAddHome()
   const addUnit = useAddUnit()
   const updateHome = useUpdateHome()
@@ -118,6 +124,7 @@ export function HomesPage() {
         HOME_FIELDS.map((x) => [x.name, text(x.name)]),
       ) as Record<TextKey, string>),
       approvedCapacity: Number(f.get('approvedCapacity')),
+      customFields: readCustomValues(homeFields, f),
     }
     const done = { onSuccess: () => setHomeEditing(null) }
     if (currentHome) updateHome.mutate({ id: currentHome.id, ...fields }, done)
@@ -144,7 +151,15 @@ export function HomesPage() {
         description="Residential homes, their units and current compliance status."
         actions={
           profile?.role === 'responsible_individual' && (
-            <Button onClick={() => setHomeEditing('new')}>Add home</Button>
+            <>
+              <Link
+                to="/responsible-individual/settings"
+                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-surface px-4 font-medium text-slate-800 hover:bg-slate-50"
+              >
+                Customise home fields
+              </Link>
+              <Button onClick={() => setHomeEditing('new')}>Add home</Button>
+            </>
           )
         }
       />
@@ -279,6 +294,10 @@ export function HomesPage() {
                 )}
               </Field>
             ))}
+            <CustomFieldInputs
+              config={homeFields}
+              values={currentHome?.customFields}
+            />
             <FormError error={currentHome ? updateHome.error : addHome.error} />
             <Button
               type="submit"
@@ -308,6 +327,7 @@ export function HomesPage() {
                 </div>
               ))}
             </dl>
+            <CustomFieldValues home={detail} config={homeFields} />
             <DocumentsPanel
               ownerType="home"
               ownerId={detail.id}

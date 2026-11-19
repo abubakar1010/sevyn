@@ -197,3 +197,19 @@ export function validateFieldConfig(
     }),
   }
 }
+
+/** Form name for a custom field, so a page can read the values back from its form. */
+export const customFieldName = (id: string) => `cf:${id}`
+
+/** Reads the custom values submitted from a form built with `CustomFieldInputs`. */
+export function readCustomValues(
+  config: HomeFieldConfig,
+  form: FormData,
+): Record<string, string> {
+  return Object.fromEntries(
+    activeFields(config).map((f) => [
+      f.id,
+      String(form.get(customFieldName(f.id)) ?? '').trim(),
+    ]),
+  )
+}

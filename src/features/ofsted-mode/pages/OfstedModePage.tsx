@@ -15,6 +15,7 @@ import {
   useAmberDays,
   useAudits,
   useDocuments,
+  useHomeFields,
   useHomes,
   useInterimMeasures,
   usePolicies,
@@ -24,6 +25,7 @@ import {
   useYoungPeople,
 } from '@/data/hooks'
 import { buildComplianceItems } from '@/features/compliance/compliance'
+import { CustomFieldValues } from '@/features/homes/CustomFieldValues'
 import { formatDate } from '@/lib/format'
 import { buildInspectionSummary, RATINGS_WINDOW_DAYS } from '../inspection'
 import { useOfstedMode } from '../useOfstedMode'
@@ -58,6 +60,7 @@ export function OfstedModePage() {
   const documents = useDocuments()
   const logs = useQuickLogs()
   const amberDays = useAmberDays()
+  const homeFields = useHomeFields()
   const [selected, setSelected] = useState('')
   const [reportDate] = useState(() => new Date().toISOString().slice(0, 10))
 
@@ -237,6 +240,7 @@ export function OfstedModePage() {
                   <Fact label="Out of hours" value={home.outOfHoursPhone} />
                   <Fact label="Local authority / LADO" value={home.laContact} />
                 </dl>
+                <CustomFieldValues home={home} config={homeFields} />
               </Card>
             </section>
 
