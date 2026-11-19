@@ -171,7 +171,7 @@ export function HomesPage() {
                       </h2>
                       <p className="text-sm text-slate-600">{h.address}</p>
                       <p className="text-sm text-slate-600">
-                        Ofsted URN {h.ofstedUrn} � {h.approvedCapacity} beds
+                        Ofsted URN {h.ofstedUrn} · {h.approvedCapacity} beds
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -304,7 +304,7 @@ export function HomesPage() {
               {DETAIL_ROWS.map(([label, get]) => (
                 <div key={label}>
                   <dt className="font-medium text-slate-800">{label}</dt>
-                  <dd className="text-slate-700">{get(detail) || '�'}</dd>
+                  <dd className="text-slate-700">{get(detail) || '—'}</dd>
                 </div>
               ))}
             </dl>
