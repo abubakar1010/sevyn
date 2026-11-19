@@ -7,6 +7,7 @@ import type {
   DocumentOwner,
   DocumentRecord,
   Home,
+  HomeFieldConfig,
   HomeInput,
   InterimMeasure,
   Profile,
@@ -18,6 +19,10 @@ import type {
   Unit,
   YoungPerson,
 } from '@/types'
+import {
+  cleanCustomValues,
+  validateFieldConfig,
+} from '@/features/homes/customFields'
 import * as mock from './mock'
 
 /**
@@ -102,7 +107,15 @@ export async function addHome(profile: Profile, input: HomeInput) {
     throw new Error('A home with this name already exists')
   if (profile.role !== 'responsible_individual')
     throw new Error('Only Responsible Individuals can create homes')
-  mock.homes.push({ id: newId(), ...input })
+  mock.homes.push({
+    id: newId(),
+    ...input,
+    customFields: cleanCustomValues(
+      mock.orgSettings.homeFields,
+      input.customFields,
+      undefined,
+    ),
+  })
   audit(profile, 'Added home', input.name)
   return delay(true)
 }
@@ -463,6 +476,20 @@ export async function saveSettings(
   return delay(true)
 }
 
+/**
+ * Replaces the company's extra home fields and the sections that group them. Fields can
+ * be retired but not deleted, and their type is fixed, so saved values never go stale.
+ */
+export async function saveHomeFields(profile: Profile, input: HomeFieldConfig) {
+  assertResponsibleIndividual(profile)
+  mock.orgSettings.homeFields = validateFieldConfig(
+    input,
+    mock.orgSettings.homeFields,
+  )
+  audit(profile, 'Updated home fields', 'Homes')
+  return delay(true)
+}
+
 const OWNER_LABEL: Record<DocumentOwner, string> = {
   home: 'home documents',
   staff: 'staff files',
@@ -678,7 +705,14 @@ export async function updateHome(
     throw new Error('Only Responsible Individuals can edit homes')
   const home = mock.homes.find((h) => h.id === input.id)
   if (!home) throw new Error('Home not found')
-  Object.assign(home, input)
+  Object.assign(home, {
+    ...input,
+    customFields: cleanCustomValues(
+      mock.orgSettings.homeFields,
+      input.customFields,
+      home.customFields,
+    ),
+  })
   audit(profile, 'Updated home', input.name, home.id)
   return delay(true)
 }

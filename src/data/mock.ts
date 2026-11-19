@@ -25,6 +25,12 @@ export function daysFromNow(n: number): string {
   return d.toISOString().slice(0, 10)
 }
 
+/** Example fields for the demo company; a real company defines its own in Settings. */
+export const HF_FIRE_MARSHAL = 'hf-fire-marshal'
+export const HF_INSURANCE = 'hf-insurance-renewal'
+export const HF_SPRINKLERS = 'hf-sprinklers'
+const HS_PREMISES = 'hs-premises'
+
 const homeProfile = (
   n: number,
   p: Pick<Home, 'ofstedUrn' | 'approvedCapacity' | 'ageRange'> &
@@ -50,6 +56,11 @@ export const homes: Home[] = [
       managerName: 'Alex Morgan',
       genderPermitted: 'Mixed',
     }),
+    customFields: {
+      [HF_FIRE_MARSHAL]: 'Jordan Lee',
+      [HF_INSURANCE]: daysFromNow(20),
+      [HF_SPRINKLERS]: 'yes',
+    },
   },
   {
     id: 'h2',
@@ -62,6 +73,10 @@ export const homes: Home[] = [
       managerName: 'Casey Quinn',
       genderPermitted: 'Female',
     }),
+    customFields: {
+      [HF_INSURANCE]: daysFromNow(200),
+      [HF_SPRINKLERS]: 'no',
+    },
   },
   {
     id: 'h3',
@@ -462,6 +477,33 @@ export const orgSettings: OrgSettings = {
   name: 'Demo Care Group',
   amberDays: 30,
   documentCategories: structuredClone(DEFAULT_DOCUMENT_CATEGORIES),
+  homeFields: {
+    sections: [{ id: HS_PREMISES, name: 'Premises & safety' }],
+    fields: [
+      {
+        id: HF_FIRE_MARSHAL,
+        label: 'Fire marshal',
+        type: 'text',
+        sectionId: HS_PREMISES,
+        required: false,
+      },
+      {
+        id: HF_INSURANCE,
+        label: 'Insurance renewal date',
+        type: 'date',
+        sectionId: HS_PREMISES,
+        required: false,
+        trackExpiry: true,
+      },
+      {
+        id: HF_SPRINKLERS,
+        label: 'Sprinkler system fitted',
+        type: 'yes_no',
+        sectionId: HS_PREMISES,
+        required: false,
+      },
+    ],
+  },
 }
 
 export const audits: Audit[] = [

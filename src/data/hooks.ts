@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/app/useAuth'
-import type { Profile } from '@/types'
+import type { HomeFieldConfig, Profile } from '@/types'
 import * as api from './api'
 
 function useScoped<T>(key: string, fn: (p: Profile) => Promise<T>) {
@@ -78,6 +78,14 @@ export const useSaveSettings = () =>
 
 export const useSaveDocumentCategories = () =>
   useWrite(api.saveDocumentCategories, ['settings', 'documents', ...AUDIT])
+
+export const useSaveHomeFields = () =>
+  useWrite(api.saveHomeFields, ['settings', 'homes', ...AUDIT])
+
+const NO_HOME_FIELDS: HomeFieldConfig = { sections: [], fields: [] }
+/** The company's extra home fields; empty until settings load. */
+export const useHomeFields = () =>
+  useSettings().data?.homeFields ?? NO_HOME_FIELDS
 
 /** Organisation's amber window in days; falls back to 30 until settings load. */
 export const useAmberDays = () => useSettings().data?.amberDays ?? 30

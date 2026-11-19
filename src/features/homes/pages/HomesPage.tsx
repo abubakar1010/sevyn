@@ -33,7 +33,7 @@ import {
 
 type HomeEditing = Home | 'new' | null
 
-type TextKey = Exclude<keyof HomeInput, 'approvedCapacity'>
+type TextKey = Exclude<keyof HomeInput, 'approvedCapacity' | 'customFields'>
 interface HomeField {
   name: TextKey
   label: string

@@ -29,6 +29,8 @@ export interface Home {
   laContact: string
   ageRange: string
   genderPermitted: string
+  /** Values for the company's own home fields, keyed by field id. Empty values are not stored. */
+  customFields?: Record<string, string>
 }
 
 /** Editable home profile fields (everything except the id). */
@@ -186,12 +188,45 @@ export interface AppUser {
   active: boolean
 }
 
+export type HomeFieldType =
+  'text' | 'long_text' | 'number' | 'date' | 'yes_no' | 'dropdown'
+
+/** A heading the company groups its own home fields under. */
+export interface HomeFieldSection {
+  id: string
+  name: string
+}
+
+/** A field the company has added to every home's profile. */
+export interface HomeFieldDefinition {
+  id: string
+  label: string
+  /** Fixed once created, so saved values always match their type. */
+  type: HomeFieldType
+  sectionId: string
+  required: boolean
+  /** Choices for dropdown fields. */
+  options?: string[]
+  /** Date fields only: shows on the dashboard like a DBS or policy date. */
+  trackExpiry?: boolean
+  /** Retired fields are hidden but keep their saved values. */
+  archived?: boolean
+}
+
+/** Sections and fields are shown in the order they are listed. */
+export interface HomeFieldConfig {
+  sections: HomeFieldSection[]
+  fields: HomeFieldDefinition[]
+}
+
 export interface OrgSettings {
   name: string
   /** Days before expiry that a compliance item turns amber. */
   amberDays: number
   /** Document categories per file type; each company names its own. */
   documentCategories: Record<DocumentOwner, string[]>
+  /** Extra fields every home carries; each company defines its own. */
+  homeFields: HomeFieldConfig
 }
 
 export interface Audit {

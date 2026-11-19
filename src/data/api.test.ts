@@ -429,3 +429,160 @@ describe('customisable document categories', () => {
     ).toBeGreaterThan(1)
   })
 })
+
+describe('company home fields', () => {
+  const settingsFields = async () => (await api.getSettings()).homeFields
+  const premises = 'hs-premises'
+
+  it('lets only the Responsible Individual change the fields', async () => {
+    const cfg = await settingsFields()
+    await expect(api.saveHomeFields(manager, cfg)).rejects.toThrow(
+      'Responsible Individuals only',
+    )
+    await expect(api.saveHomeFields(worker, cfg)).rejects.toThrow(
+      'Responsible Individuals only',
+    )
+  })
+
+  it('adds a field and section, and records it in the audit log', async () => {
+    const cfg = await settingsFields()
+    await api.saveHomeFields(responsibleIndividual, {
+      sections: [...cfg.sections, { id: 'hs-new', name: 'Contacts' }],
+      fields: [
+        ...cfg.fields,
+        {
+          id: 'hf-gp',
+          label: 'Local GP',
+          type: 'dropdown',
+          sectionId: 'hs-new',
+          required: false,
+          options: [' Oak Surgery ', 'Mill Surgery'],
+        },
+      ],
+    })
+    const saved = await settingsFields()
+    expect(saved.sections.map((s) => s.name)).toContain('Contacts')
+    expect(saved.fields.find((f) => f.id === 'hf-gp')?.options).toEqual([
+      'Oak Surgery',
+      'Mill Surgery',
+    ])
+    expect((await api.listAuditLog(responsibleIndividual))[0].action).toBe(
+      'Updated home fields',
+    )
+  })
+
+  it('saves values on a home and checks them against the field rules', async () => {
+    const home = (await api.listHomes(responsibleIndividual)).find(
+      (h) => h.id === 'h3',
+    )!
+    const { id, ...rest } = home
+    const update = (customFields: Record<string, string>) =>
+      api.updateHome(responsibleIndividual, { id, ...rest, customFields })
+
+    await expect(update({ 'hf-gp': 'Nowhere Surgery' })).rejects.toThrow(
+      'must be one of the listed choices',
+    )
+    await expect(update({ 'hf-insurance-renewal': 'soon' })).rejects.toThrow(
+      'must be a valid date',
+    )
+    await update({
+      'hf-gp': 'Mill Surgery',
+      'hf-fire-marshal': '  Pat  ',
+      'hf-insurance-renewal': '',
+      unknown: 'dropped',
+    })
+    const saved = (await api.listHomes(responsibleIndividual)).find(
+      (h) => h.id === 'h3',
+    )!
+    expect(saved.customFields).toEqual({
+      'hf-gp': 'Mill Surgery',
+      'hf-fire-marshal': 'Pat',
+    })
+  })
+
+  it('keeps a home’s custom values when it is saved without them', async () => {
+    const home = (await api.listHomes(responsibleIndividual)).find(
+      (h) => h.id === 'h1',
+    )!
+    const { id, customFields, ...rest } = home
+    expect(customFields?.['hf-fire-marshal']).toBe('Jordan Lee')
+    await api.updateHome(responsibleIndividual, { id, ...rest })
+    expect(
+      (await api.listHomes(responsibleIndividual)).find((h) => h.id === 'h1')
+        ?.customFields?.['hf-fire-marshal'],
+    ).toBe('Jordan Lee')
+  })
+
+  it('enforces required fields when adding a home', async () => {
+    const cfg = await settingsFields()
+    await api.saveHomeFields(responsibleIndividual, {
+      ...cfg,
+      fields: cfg.fields.map((f) =>
+        f.id === 'hf-sprinklers' ? { ...f, required: true } : f,
+      ),
+    })
+    await expect(
+      api.addHome(
+        responsibleIndividual,
+        homeInput({ name: 'Needs Sprinklers' }),
+      ),
+    ).rejects.toThrow('Sprinkler system fitted is required')
+    await api.addHome(
+      responsibleIndividual,
+      homeInput({
+        name: 'Has Sprinklers',
+        customFields: { 'hf-sprinklers': 'yes' },
+      }),
+    )
+  })
+
+  it('retires a field without losing its values, and refuses deletion or a type change', async () => {
+    const cfg = await settingsFields()
+    const retire = (id: string, patch: object) => ({
+      ...cfg,
+      fields: cfg.fields.map((f) => (f.id === id ? { ...f, ...patch } : f)),
+    })
+    await expect(
+      api.saveHomeFields(responsibleIndividual, {
+        ...cfg,
+        fields: cfg.fields.filter((f) => f.id !== 'hf-fire-marshal'),
+      }),
+    ).rejects.toThrow('cannot be deleted')
+    await expect(
+      api.saveHomeFields(
+        responsibleIndividual,
+        retire('hf-fire-marshal', { type: 'number' }),
+      ),
+    ).rejects.toThrow('cannot change')
+
+    await api.saveHomeFields(
+      responsibleIndividual,
+      retire('hf-fire-marshal', { archived: true }),
+    )
+    const h1 = (await api.listHomes(responsibleIndividual)).find(
+      (h) => h.id === 'h1',
+    )!
+    // retired fields are no longer validated, and keep their saved value
+    const { id, ...rest } = h1
+    await api.updateHome(responsibleIndividual, { id, ...rest })
+    expect(
+      (await api.listHomes(responsibleIndividual)).find((h) => h.id === 'h1')
+        ?.customFields?.['hf-fire-marshal'],
+    ).toBe('Jordan Lee')
+
+    await api.saveHomeFields(
+      responsibleIndividual,
+      retire('hf-fire-marshal', { archived: false }),
+    )
+  })
+
+  it('keeps the fields when other settings are saved', async () => {
+    await api.saveSettings(responsibleIndividual, {
+      name: 'Demo Care Group',
+      amberDays: 30,
+    })
+    expect(
+      (await settingsFields()).sections.some((s) => s.id === premises),
+    ).toBe(true)
+  })
+})
