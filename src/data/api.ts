@@ -197,7 +197,16 @@ const ITEM_LABELS: Record<string, string> = {
 
 /** Turns a compliance item key (e.g. `dbs:s6`) into a readable label and its home. */
 function describeItem(key: string): { target: string; homeId: string } | null {
-  const [kind, id] = key.split(':')
+  const [kind, id, fieldId] = key.split(':')
+  if (kind === 'homefield') {
+    const home = mock.homes.find((h) => h.id === id)
+    const field = mock.orgSettings.homeFields.fields.find(
+      (f) => f.id === fieldId && !f.archived && f.trackExpiry,
+    )
+    return home && field
+      ? { target: `${field.label} — ${home.name}`, homeId: home.id }
+      : null
+  }
   if (kind === 'audit') {
     const found = mock.audits.find((a) => a.id === id)
     return found

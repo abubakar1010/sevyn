@@ -13,6 +13,7 @@ import {
   useAmberDays,
   usePolicies,
   useAudits,
+  useHomeFields,
 } from '@/data/hooks'
 import { QuickLogAnalytics } from '@/features/quick-logs/QuickLogAnalytics'
 import { formatDate } from '@/lib/format'
@@ -37,6 +38,7 @@ export function CompliancePage() {
   const amberDays = useAmberDays()
   const policies = usePolicies()
   const audits = useAudits()
+  const homeFields = useHomeFields()
 
   if (
     homes.isPending ||
@@ -65,7 +67,12 @@ export function CompliancePage() {
     measures.data,
     undefined,
     amberDays,
-    { policies: policies.data, audits: audits.data },
+    {
+      policies: policies.data,
+      audits: audits.data,
+      homes: homes.data,
+      homeFields,
+    },
   )
   const counts = countByStatus(items)
   const total = counts.red + counts.amber + counts.green

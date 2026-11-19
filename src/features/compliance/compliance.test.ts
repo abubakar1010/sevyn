@@ -1,4 +1,11 @@
-import type { Audit, InterimMeasure, Policy, StaffMember } from '@/types'
+import type {
+  Audit,
+  Home,
+  HomeFieldConfig,
+  InterimMeasure,
+  Policy,
+  StaffMember,
+} from '@/types'
 import {
   actionPath,
   buildComplianceItems,
@@ -121,5 +128,97 @@ describe('actionPath', () => {
     expect(actionPath('audit:a1', 'registered_manager')).toBeNull()
     expect(actionPath('dbs:s1', 'support_worker')).toBeNull()
     expect(actionPath('unknown:x', 'responsible_individual')).toBeNull()
+  })
+})
+
+describe('tracked home date fields', () => {
+  const homeFields: HomeFieldConfig = {
+    sections: [{ id: 's', name: 'Premises' }],
+    fields: [
+      {
+        id: 'ins',
+        label: 'Insurance renewal',
+        type: 'date',
+        sectionId: 's',
+        required: false,
+        trackExpiry: true,
+      },
+      {
+        id: 'untracked',
+        label: 'Opened on',
+        type: 'date',
+        sectionId: 's',
+        required: false,
+      },
+      {
+        id: 'old',
+        label: 'Old date',
+        type: 'date',
+        sectionId: 's',
+        required: false,
+        trackExpiry: true,
+        archived: true,
+      },
+      {
+        id: 'text',
+        label: 'Note',
+        type: 'text',
+        sectionId: 's',
+        required: false,
+      },
+    ],
+  }
+  const home = (id: string, customFields: Record<string, string>) =>
+    ({ id, name: `Home ${id}`, customFields }) as Home
+  const build = (homes: Home[]) =>
+    buildComplianceItems([], [], [], now, 30, { homes, homeFields })
+
+  it('turns tracked dates into items with the usual red, amber and green', () => {
+    const items = build([
+      home('h1', { ins: '2025-12-01' }),
+      home('h2', { ins: '2026-01-15' }),
+      home('h3', { ins: '2026-09-01' }),
+    ])
+    expect(items.map((i) => [i.key, i.status])).toEqual([
+      ['homefield:h1:ins', 'red'],
+      ['homefield:h2:ins', 'amber'],
+      ['homefield:h3:ins', 'green'],
+    ])
+    expect(items[0]).toMatchObject({
+      homeId: 'h1',
+      subject: 'Home h1',
+      label: 'Insurance renewal',
+      due: '2025-12-01',
+    })
+    expect(homeStatus(items, 'h1')).toBe('red')
+  })
+
+  it('ignores untracked, retired and non-date fields, and empty dates', () => {
+    expect(
+      build([
+        home('h1', { untracked: '2020-01-01', old: '2020-01-01', text: 'x' }),
+        home('h2', {}),
+      ]),
+    ).toEqual([])
+  })
+
+  it('adds nothing without a field setup', () => {
+    expect(
+      buildComplianceItems([], [], [], now, 30, {
+        homes: [home('h1', { ins: '2020-01-01' })],
+      }),
+    ).toEqual([])
+  })
+})
+
+describe('actionPath for home fields', () => {
+  it('sends the item to the homes page for roles that have one', () => {
+    expect(actionPath('homefield:h1:ins', 'responsible_individual')).toBe(
+      '/responsible-individual/homes',
+    )
+    expect(actionPath('homefield:h1:ins', 'registered_manager')).toBe(
+      '/manager/homes',
+    )
+    expect(actionPath('homefield:h1:ins', 'support_worker')).toBeNull()
   })
 })

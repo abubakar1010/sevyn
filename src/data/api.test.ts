@@ -586,3 +586,45 @@ describe('company home fields', () => {
     ).toBe(true)
   })
 })
+
+describe('interim measures for tracked home dates', () => {
+  it('lets a manager note a measure against an out-of-date home field', async () => {
+    const home = (await api.listHomes(manager)).find((h) => h.id === 'h1')!
+    const { id, customFields, ...rest } = home
+    await api.updateHome(responsibleIndividual, {
+      id,
+      ...rest,
+      customFields: { ...customFields, 'hf-insurance-renewal': '2020-01-01' },
+    })
+    await api.addInterimMeasure(manager, {
+      itemKey: 'homefield:h1:hf-insurance-renewal',
+      note: 'Broker chasing the renewal certificate',
+    })
+    expect((await api.listAuditLog(manager))[0]).toMatchObject({
+      action: 'Added interim measure',
+      target: 'Insurance renewal date — Oakview House',
+    })
+  })
+  it('rejects a key for a field that is not tracked or does not exist', async () => {
+    await expect(
+      api.addInterimMeasure(manager, {
+        itemKey: 'homefield:h1:hf-fire-marshal',
+        note: 'x',
+      }),
+    ).rejects.toThrow('Compliance item not found')
+    await expect(
+      api.addInterimMeasure(manager, {
+        itemKey: 'homefield:nope:hf-insurance-renewal',
+        note: 'x',
+      }),
+    ).rejects.toThrow('Compliance item not found')
+  })
+  it('keeps managers out of other homes', async () => {
+    await expect(
+      api.addInterimMeasure(worker, {
+        itemKey: 'homefield:h1:hf-insurance-renewal',
+        note: 'x',
+      }),
+    ).rejects.toThrow('Not permitted')
+  })
+})

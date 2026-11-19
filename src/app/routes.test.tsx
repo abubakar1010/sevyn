@@ -395,3 +395,11 @@ describe('company home fields on the Homes page', () => {
     expect(section.getByText('Insurance renewal date')).toBeInTheDocument()
   })
 })
+
+it('lists a tracked home date on the dashboard and links it to the homes page', async () => {
+  renderAt(responsibleIndividual, '/responsible-individual')
+  const link = await screen.findByRole('link', {
+    name: 'Insurance renewal date',
+  })
+  expect(link).toHaveAttribute('href', '/responsible-individual/homes')
+})

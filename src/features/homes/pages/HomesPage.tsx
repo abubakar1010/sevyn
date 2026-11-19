@@ -111,7 +111,7 @@ export function HomesPage() {
           measures.data,
           undefined,
           amberDays,
-          { audits: audits.data },
+          { audits: audits.data, homes: homes.data, homeFields },
         )
       : []
 

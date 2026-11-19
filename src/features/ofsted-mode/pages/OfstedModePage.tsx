@@ -98,7 +98,12 @@ export function OfstedModePage() {
         measures.data,
         undefined,
         amberDays,
-        { policies: policies.data, audits: audits.data },
+        {
+          policies: policies.data,
+          audits: audits.data,
+          homes: homes.data,
+          homeFields,
+        },
       ),
       staff: staff.data,
       youngPeople: youngPeople.data,

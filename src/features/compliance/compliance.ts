@@ -1,8 +1,11 @@
 import { HOME_BY_ROLE } from '@/app/homeByRole'
+import { activeFields } from '@/features/homes/customFields'
 import { ragForDate, worstRag } from '@/lib/rag'
 import type {
   ComplianceItem,
   Audit,
+  Home,
+  HomeFieldConfig,
   InterimMeasure,
   Policy,
   Rag,
@@ -17,7 +20,13 @@ export function buildComplianceItems(
   measures: InterimMeasure[],
   now = new Date(),
   amberDays = 30,
-  extra: { policies?: Policy[]; audits?: Audit[] } = {},
+  extra: {
+    policies?: Policy[]
+    audits?: Audit[]
+    /** With `homeFields`, date fields marked "show on the dashboard" become items. */
+    homes?: Home[]
+    homeFields?: HomeFieldConfig
+  } = {},
 ): ComplianceItem[] {
   const measureFor = (key: string) =>
     measures.find((m) => m.itemKey === key && m.active)
@@ -77,6 +86,21 @@ export function buildComplianceItems(
         item(`audit:${a.id}`, a.homeId, 'Audit', a.title, a.expiryDate),
       )
   }
+  // A tracked date left empty is skipped: it does not apply to that home. Make the field
+  // required if every home must have it.
+  const tracked = extra.homeFields
+    ? activeFields(extra.homeFields).filter(
+        (f) => f.type === 'date' && f.trackExpiry,
+      )
+    : []
+  for (const h of extra.homes ?? [])
+    for (const f of tracked) {
+      const due = h.customFields?.[f.id]
+      if (due)
+        items.push(
+          item(`homefield:${h.id}:${f.id}`, h.id, h.name, f.label, due),
+        )
+    }
   return items
 }
 
@@ -93,8 +117,8 @@ export function countByStatus(items: ComplianceItem[]): Record<Rag, number> {
 
 /** Pages each role can open, so a dashboard item only links somewhere that exists for them. */
 const SECTIONS: Record<Role, string[]> = {
-  responsible_individual: ['staff', 'training', 'policies', 'audits'],
-  registered_manager: ['staff', 'training', 'policies'],
+  responsible_individual: ['staff', 'training', 'policies', 'audits', 'homes'],
+  registered_manager: ['staff', 'training', 'policies', 'homes'],
   support_worker: ['policies'],
 }
 
@@ -104,6 +128,7 @@ const SECTION_BY_KIND: Record<string, string> = {
   training: 'training',
   policy: 'policies',
   audit: 'audits',
+  homefield: 'homes',
 }
 
 /** Where to go to action a compliance item, or null when this role has no page for it. */
