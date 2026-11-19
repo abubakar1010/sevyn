@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/ui/PageHeader'
 import { QueryState } from '@/components/ui/QueryState'
 import { useSaveSettings, useSettings } from '@/data/hooks'
 import { DocumentCategoriesCard } from '../DocumentCategoriesCard'
+import { HomeFieldsEditor } from '../HomeFieldsEditor'
 
 export function SettingsPage() {
   const settings = useSettings()
@@ -110,6 +111,19 @@ export function SettingsPage() {
                 categories={settings.data.documentCategories.young_person}
               />
             </div>
+          </section>
+        )}
+        {settings.data && (
+          <section aria-label="Home profile fields" className="mt-8">
+            <h2 className="text-lg font-semibold">Home profile fields</h2>
+            <p className="mb-4 max-w-2xl text-sm text-slate-600">
+              Add your own fields to every home's profile and group them under
+              headings you name. Choose a type for each, mark it required, and
+              for dates choose whether it appears on the dashboard when due.
+              Fields are retired rather than deleted, so saved values are never
+              lost. Name, address, Ofsted URN and capacity are always present.
+            </p>
+            <HomeFieldsEditor saved={settings.data.homeFields} />
           </section>
         )}
       </QueryState>

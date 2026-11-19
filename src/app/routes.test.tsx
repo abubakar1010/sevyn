@@ -280,3 +280,63 @@ it('masks young peoples names for the Responsible Individual when Ofsted Mode is
     await screen.findByRole('button', { name: 'Open file for A.B.' }),
   ).toBeInTheDocument()
 })
+
+describe('home profile fields in Settings', () => {
+  const region = () =>
+    within(screen.getByRole('region', { name: 'Home profile fields' }))
+
+  it('lets the Responsible Individual add a dropdown field and save it', async () => {
+    renderAt(responsibleIndividual, '/responsible-individual/settings')
+    await screen.findByRole('region', { name: 'Home profile fields' })
+    await userEvent.click(
+      region().getByRole('button', { name: 'Add field to Premises & safety' }),
+    )
+    const labels = region().getAllByLabelText('Field label')
+    const label = labels[labels.length - 1]
+    await userEvent.type(label, 'Heating type')
+    const types = region().getAllByLabelText('Field type')
+    await userEvent.selectOptions(types[types.length - 1], 'dropdown')
+    await userEvent.type(
+      await region().findByLabelText('Choices (one per line)'),
+      'Gas{enter}Electric',
+    )
+    await userEvent.click(
+      region().getByRole('button', { name: 'Save home fields' }),
+    )
+    expect(await region().findByText('Saved')).toBeInTheDocument()
+    expect(
+      region().getByRole('button', { name: 'Retire Heating type' }),
+    ).toBeInTheDocument()
+  })
+
+  it('explains what is wrong instead of saving an unusable field', async () => {
+    renderAt(responsibleIndividual, '/responsible-individual/settings')
+    await screen.findByRole('region', { name: 'Home profile fields' })
+    await userEvent.click(
+      region().getByRole('button', { name: 'Add field to Premises & safety' }),
+    )
+    await userEvent.click(
+      region().getByRole('button', { name: 'Save home fields' }),
+    )
+    expect(await region().findByRole('alert')).toHaveTextContent(
+      'Field label is required',
+    )
+  })
+
+  it('fixes the type of a saved field but lets it be retired', async () => {
+    renderAt(responsibleIndividual, '/responsible-individual/settings')
+    await screen.findByRole('region', { name: 'Home profile fields' })
+    const labels = region().getAllByLabelText('Field label')
+    const row = labels.findIndex(
+      (l) => (l as HTMLInputElement).value === 'Fire marshal',
+    )
+    expect(region().getAllByLabelText('Field type')[row]).toBeDisabled()
+    await userEvent.click(
+      region().getByRole('button', { name: 'Retire Fire marshal' }),
+    )
+    expect(
+      region().getByRole('button', { name: 'Restore Fire marshal' }),
+    ).toBeInTheDocument()
+    expect(region().getByText('Retired')).toBeInTheDocument()
+  })
+})
