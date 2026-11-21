@@ -21,6 +21,7 @@ import { formatDate } from '@/lib/format'
 import { useCanEdit } from '@/lib/useCanEdit'
 import type { YoungPerson, YoungPersonProfile } from '@/types'
 import { DocumentsPanel } from '@/features/documents/DocumentsPanel'
+import { YoungPersonRatings } from '@/features/quick-logs/QuickLogAnalytics'
 import { youngPersonName } from '../display'
 import { PROFILE_GROUPS } from '../profileFields'
 
@@ -265,6 +266,10 @@ export function YoungPeoplePage() {
                 </dl>
               </section>
             ))}
+            <section aria-label="Quick log progress" className="mb-5">
+              <h3 className="mb-2 text-sm font-semibold">Quick log progress</h3>
+              <YoungPersonRatings youngPersonId={file.id} />
+            </section>
             <DocumentsPanel
               ownerType="young_person"
               ownerId={file.id}

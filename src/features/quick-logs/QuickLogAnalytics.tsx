@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Field'
 import { QueryState } from '@/components/ui/QueryState'
-import { useHomes, useQuickLogs } from '@/data/hooks'
+import { useHomes, useQuickLogs, useYoungPeople } from '@/data/hooks'
+import { useOfstedMode } from '@/features/ofsted-mode/useOfstedMode'
+import { youngPersonName } from '@/features/young-people/display'
 import { summariseRatings, type RatingTally } from './progress'
 import { LOG_TAGS } from './tags'
 
@@ -76,71 +78,43 @@ function Swatch({ color }: { color: string }) {
 }
 
 /**
- * Dashboard summary of how young people are doing, from the progress ratings written
- * into Quick Logs. It counts ratings (not people), so it never names anyone.
+ * How one young person is doing, from the progress ratings written into their Quick Logs.
+ * Only that person's logs are counted, never the home's as a whole.
  */
-export function QuickLogAnalytics() {
+export function YoungPersonRatings({
+  youngPersonId,
+}: {
+  youngPersonId: string
+}) {
   const logs = useQuickLogs()
-  const homes = useHomes()
   const [days, setDays] = useState<number>(30)
-  const [homeId, setHomeId] = useState('')
   const [now] = useState(() => Date.now())
 
   const since = now - days * DAY_MS
-  const scoped = (logs.data ?? []).filter((l) => !homeId || l.homeId === homeId)
+  const scoped = (logs.data ?? []).filter(
+    (l) => l.youngPersonId === youngPersonId,
+  )
   const { overall, byArea } = summariseRatings(scoped, since, LOG_TAGS)
 
   return (
-    <section aria-label="Quick log analytics" className="rating-root mt-8">
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold">Quick log progress</h2>
-          <p className="text-sm text-slate-600">
-            How many ratings in daily logs showed progress, no change or
-            decline.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          {(homes.data?.length ?? 0) > 1 && (
-            <label className="flex flex-col gap-1 text-sm font-medium text-slate-800">
-              Home
-              <Select
-                value={homeId}
-                onChange={(e) => setHomeId(e.target.value)}
-                className="min-w-40"
-              >
-                <option value="">All homes</option>
-                {homes.data?.map((h) => (
-                  <option key={h.id} value={h.id}>
-                    {h.name}
-                  </option>
-                ))}
-              </Select>
-            </label>
-          )}
-          <label className="flex flex-col gap-1 text-sm font-medium text-slate-800">
-            Period
-            <Select
-              value={days}
-              onChange={(e) => setDays(Number(e.target.value))}
-              className="min-w-40"
-            >
-              {PERIODS.map((p) => (
-                <option key={p.days} value={p.days}>
-                  {p.label}
-                </option>
-              ))}
-            </Select>
-          </label>
-        </div>
-      </div>
+    <div className="rating-root">
+      <label className="mb-3 flex max-w-48 flex-col gap-1 text-sm font-medium text-slate-800">
+        Period
+        <Select value={days} onChange={(e) => setDays(Number(e.target.value))}>
+          {PERIODS.map((p) => (
+            <option key={p.days} value={p.days}>
+              {p.label}
+            </option>
+          ))}
+        </Select>
+      </label>
 
       <QueryState queries={[logs]}>
         <Card>
           {overall.total === 0 ? (
             <p className="text-sm text-slate-600">
-              No rated logs in this period. Rate each progress area when writing
-              a log to build this chart.
+              No rated logs for this young person in this period. Rate each
+              progress area when writing a log to build this chart.
             </p>
           ) : (
             <>
@@ -221,6 +195,57 @@ export function QuickLogAnalytics() {
             </>
           )}
         </Card>
+      </QueryState>
+    </div>
+  )
+}
+
+/** Dashboard section: pick a young person to see their own progress. */
+export function QuickLogAnalytics() {
+  const people = useYoungPeople()
+  const homes = useHomes()
+  const { enabled: ofsted } = useOfstedMode()
+  const [chosen, setChosen] = useState('')
+  const list = people.data ?? []
+  const selected = list.find((y) => y.id === chosen) ?? list[0]
+  const showHome = (homes.data?.length ?? 0) > 1
+
+  return (
+    <section aria-label="Quick log analytics" className="mt-8">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold">Quick log progress</h2>
+          <p className="text-sm text-slate-600">
+            How many of this young person's daily log ratings showed progress,
+            no change or decline.
+          </p>
+        </div>
+        <label className="flex flex-col gap-1 text-sm font-medium text-slate-800">
+          Young person
+          <Select
+            value={selected?.id ?? ''}
+            onChange={(e) => setChosen(e.target.value)}
+            className="min-w-48"
+          >
+            {list.map((y) => (
+              <option key={y.id} value={y.id}>
+                {youngPersonName(y, ofsted)}
+                {showHome
+                  ? ` (${homes.data?.find((h) => h.id === y.homeId)?.name ?? ''})`
+                  : ''}
+              </option>
+            ))}
+          </Select>
+        </label>
+      </div>
+      <QueryState queries={[people]}>
+        {selected ? (
+          <YoungPersonRatings youngPersonId={selected.id} />
+        ) : (
+          <Card>
+            <p className="text-sm text-slate-600">No young people yet.</p>
+          </Card>
+        )}
       </QueryState>
     </section>
   )

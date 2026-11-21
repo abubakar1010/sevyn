@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { addInterimMeasure } from '@/data/api'
@@ -211,7 +211,7 @@ it('lets the Responsible Individual rename a document category in Settings', asy
   expect(screen.getByDisplayValue('Employment contract')).toBeInTheDocument()
 })
 
-it('charts Quick Log ratings on the dashboard for each role', async () => {
+it('charts Quick Log ratings for one young person on the dashboard, for each role', async () => {
   for (const [user, path] of [
     [responsibleIndividual, '/responsible-individual'],
     [manager, '/manager'],
@@ -221,6 +221,7 @@ it('charts Quick Log ratings on the dashboard for each role', async () => {
     expect(
       await screen.findByRole('heading', { name: 'Quick log progress' }),
     ).toBeInTheDocument()
+    expect(await screen.findByLabelText('Young person')).toBeInTheDocument()
     expect(
       await screen.findByRole('img', {
         name: /Emotional Wellbeing: \d+ progressing, \d+ no change, \d+ declined/,
@@ -228,6 +229,51 @@ it('charts Quick Log ratings on the dashboard for each role', async () => {
     ).toBeInTheDocument()
     unmount()
   }
+})
+
+it("counts only the chosen young person's logs, not the whole home", async () => {
+  renderAt(responsibleIndividual, '/responsible-individual')
+  const picker = await screen.findByLabelText('Young person')
+  await screen.findByRole('option', { name: /Demo Young Person One/ })
+  const options = within(picker).getAllByRole('option')
+  expect(options.length).toBeGreaterThan(1)
+  const seen: string[] = []
+  for (const o of options) {
+    await userEvent.selectOptions(picker, o)
+    await waitFor(() =>
+      expect(screen.queryByText('Loading…')).not.toBeInTheDocument(),
+    )
+    seen.push(
+      `${o.textContent}: ${
+        screen.queryByText(/No rated logs for this young person/)
+          ? 'none'
+          : 'rated'
+      }`,
+    )
+  }
+  expect(
+    seen.some((x) => x.endsWith('none')),
+    seen.join('; '),
+  ).toBe(true)
+  expect(
+    seen.some((x) => x.endsWith('rated')),
+    seen.join('; '),
+  ).toBe(true)
+})
+
+it("shows a young person's own progress in their file", async () => {
+  renderAt(responsibleIndividual, '/responsible-individual/young-people')
+  await userEvent.click(
+    await screen.findByRole('button', {
+      name: 'Open file for Demo Young Person One',
+    }),
+  )
+  const region = await screen.findByRole('region', {
+    name: 'Quick log progress',
+  })
+  expect(
+    await within(region).findByRole('img', { name: /Emotional Wellbeing:/ }),
+  ).toBeInTheDocument()
 })
 
 it('gives the Responsible Individual an inspection pack per home with links to the evidence', async () => {
