@@ -28,7 +28,7 @@ Demo users on the login page cover each role.
 |---|---|---|---|
 | Dashboard (compliance + quick log progress chart) | yes | yes | yes |
 | Ofsted Mode (inspection pack, print view) | yes | | |
-| Users, Settings (document categories, home profile fields) | yes | | |
+| Users, Settings (names & labels, document categories, home profile fields) | yes | | |
 | Homes (profile, company fields, documents) | yes (edit, customise fields) | yes (view, documents) | |
 | Staff (files, ready to work) | yes | yes | |
 | Training matrix | yes | yes | |
@@ -40,14 +40,16 @@ Demo users on the login page cover each role.
 | Interim measures | yes | yes | yes |
 | Audit log | yes | yes | |
 
-The Ofsted Mode switch (masks staff addresses and young people's names) is available to Responsible Individuals and Registered Managers.
+The Ofsted Mode switch is available to Responsible Individuals and Registered Managers. When it is on, young people appear by initials, other young people's names are hidden (also inside notes and document titles), staff appear by initials and staff addresses are hidden. Everything else stays visible.
 
 ## Notes
 - Documents and certificates only record the file name for now; real storage comes with the backend.
-- Document categories are set per company: Settings (Responsible Individual) lets each company rename, add and remove the categories for homes, staff and young people. `categories.ts` holds only the starting lists. Renaming updates documents already filed; removing a category keeps its documents.
+- Document categories are set per company: Settings (Responsible Individual) lets each company rename, add and remove the categories for homes, staff and young people. `categories.ts` holds only the starting lists. Renaming updates documents already filed; removing a category keeps its documents. Each young people's category is also assigned a Quality Standard group, which decides where its documents appear in Ofsted Mode (unassigned categories show under "Other documents").
+- Staff file and Homes page naming: in Settings a Responsible Individual can rename the built-in fields and headings on staff files (e.g. DBS recheck, Compliant to work, Documents) and the Homes page (e.g. Ofsted URN, Registered manager, Units). Only the wording changes, and a blank name restores the default. The names are used on those pages, in the Ofsted Mode pack and for the staff items on the dashboard. The Staff and Homes pages and every Documents section link straight to these settings. Registry and validation: `src/features/labels/labels.ts`.
 - Support workers can upload to a young person's file they can open (assigned home, not restricted) and see only young people's documents; every other document action stays with managers and Responsible Individuals.
 - RAG status uses the organisation's amber window (Settings). Staff DBS, safeguarding, training, policy expiry and audit next-due dates all feed the dashboard.
 - Progress graph: when logging, each progress area is rated Declined / No change / Progressing; selecting a young person on Quick logs charts the running total per area.
 - Quick log progress is per young person, never per home: the dashboard chart has a young person picker and counts only that person's progressing / no change / declined ratings (last 7, 30 or 90 days), overall and per progress area. The same summary appears in each young person's file. Names follow Ofsted Mode (initials).
 - Ofsted Mode page: pick a home to see its details, status, staff readiness, occupancy, outstanding items, open audit actions, policy reviews, documents held and recent progress ratings, with links to the evidence pages and a print / save-as-PDF report.
+- Young people's records by Quality Standard: on the Ofsted Mode page (per home) and in a young person's file while Ofsted Mode is on, each young person's records are grouped as Placement (move-in date, home, unit), Placing LA & statutory contacts (social worker, Personal Adviser, IRO, other contacts), Care & risk plans (Support / Pathway Plans, risk assessments, placement plan / care status, consents), Safeguarding & incidents (significant incidents, missing from care and return home interviews, safeguarding referrals, complaints and allegations) and Daily support & progress (quick logs from the last 90 days, keywork, health, medication, EET, independence). Grouping and name masking live in `src/features/young-people/qualityStandards.ts`.
 - Home profile fields: in Settings a Responsible Individual adds their own fields to every home, grouped under headings they name. Types are short text, long text, number, date, yes/no and dropdown; each can be required, reordered or moved between sections. A field's type is fixed once saved and fields are retired, not deleted, so saved values are never lost. Name, address, Ofsted URN and capacity stay fixed because compliance and Ofsted Mode rely on them. The fields show on the home form and profile (editable by Responsible Individuals only) and in the Ofsted Mode pack. A date field marked "show on the dashboard" becomes a compliance item for each home that has a value (red, amber or green like a DBS date, with interim measures); a home with no value is skipped, so make the field required if every home must have it. Logic lives in `src/features/homes/customFields.ts`; the demo company ships with example fields.
