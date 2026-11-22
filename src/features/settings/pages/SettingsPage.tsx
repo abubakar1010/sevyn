@@ -1,4 +1,5 @@
-import type { FormEvent } from 'react'
+import { useEffect, type FormEvent } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { FormError } from '@/components/ui/FormError'
 import { Card } from '@/components/ui/Card'
@@ -13,6 +14,16 @@ import { LabelsCard } from '../LabelsCard'
 export function SettingsPage() {
   const settings = useSettings()
   const save = useSaveSettings()
+  const { hash } = useLocation()
+  const loaded = settings.data !== undefined
+
+  // Links from the Staff and Homes pages land on the matching section once it renders.
+  useEffect(() => {
+    if (!loaded || !hash) return
+    document
+      .getElementById(decodeURIComponent(hash.slice(1)))
+      ?.scrollIntoView?.({ block: 'start' })
+  }, [loaded, hash])
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()

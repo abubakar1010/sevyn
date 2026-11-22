@@ -12,6 +12,7 @@ import {
   useDocuments,
   useSettings,
 } from '@/data/hooks'
+import { SettingsLink } from '@/features/settings/SettingsLink'
 import { formatDate } from '@/lib/format'
 import { useCanEdit } from '@/lib/useCanEdit'
 import type { DocumentOwner, DocumentRecord } from '@/types'
@@ -76,11 +77,16 @@ export function DocumentsPanel({
     <section aria-label={heading} className="mt-6">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h3 className="text-base font-semibold">{heading}</h3>
-        {canUpload && (
-          <Button size="sm" onClick={() => setUploadOpen(true)}>
-            Upload document
-          </Button>
-        )}
+        <div className="flex items-center gap-3">
+          <SettingsLink section="document-categories" variant="text">
+            Edit categories
+          </SettingsLink>
+          {canUpload && (
+            <Button size="sm" onClick={() => setUploadOpen(true)}>
+              Upload document
+            </Button>
+          )}
+        </div>
       </div>
       <QueryState queries={[docs]}>
         {mine.length === 0 ? (

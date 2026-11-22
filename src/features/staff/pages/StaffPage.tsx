@@ -15,6 +15,7 @@ import {
   useSaveStaff,
   useStaff,
 } from '@/data/hooks'
+import { SettingsLink } from '@/features/settings/SettingsLink'
 import { useCanEdit } from '@/lib/useCanEdit'
 import { DateStatus } from '@/features/compliance/DateStatus'
 import { useOfstedMode } from '@/features/ofsted-mode/useOfstedMode'
@@ -72,9 +73,16 @@ export function StaffPage() {
         title="Staff"
         description="Staff files, DBS and safeguarding status, and who is ready to work."
         actions={
-          canEdit && (
-            <Button onClick={() => setEditing('new')}>Add staff member</Button>
-          )
+          <>
+            <SettingsLink section="staff-naming">
+              Customise names & categories
+            </SettingsLink>
+            {canEdit && (
+              <Button onClick={() => setEditing('new')}>
+                Add staff member
+              </Button>
+            )}
+          </>
         }
       />
       <QueryState queries={[staff, homes]}>

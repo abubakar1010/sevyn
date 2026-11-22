@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
 import { useAuth } from '@/app/useAuth'
 import { Button } from '@/components/ui/Button'
 import { FormError } from '@/components/ui/FormError'
@@ -30,6 +29,7 @@ import { DocumentsPanel } from '@/features/documents/DocumentsPanel'
 import { CustomFieldInputs } from '@/features/homes/CustomFieldInputs'
 import { readCustomValues } from '@/features/homes/customFields'
 import { CustomFieldValues } from '@/features/homes/CustomFieldValues'
+import { SettingsLink } from '@/features/settings/SettingsLink'
 import { useCanEdit } from '@/lib/useCanEdit'
 import type { Home, HomeInput, Unit } from '@/types'
 import {
@@ -149,12 +149,9 @@ export function HomesPage() {
         actions={
           profile?.role === 'responsible_individual' && (
             <>
-              <Link
-                to="/responsible-individual/settings"
-                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-surface px-4 font-medium text-slate-800 hover:bg-slate-50"
-              >
-                Customise home fields
-              </Link>
+              <SettingsLink section="homes-naming">
+                Customise names & categories
+              </SettingsLink>
               <Button onClick={() => setHomeEditing('new')}>Add home</Button>
             </>
           )

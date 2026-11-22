@@ -386,6 +386,31 @@ it('lists each young person in the Ofsted Mode pack with their records', async (
   expect(region.queryByText(/Demo Young Person/)).not.toBeInTheDocument()
 })
 
+it('links the Staff page and files to the naming settings for the Responsible Individual only', async () => {
+  const ri = renderAt(responsibleIndividual, '/responsible-individual/staff')
+  expect(
+    await screen.findByRole('link', { name: 'Customise names & categories' }),
+  ).toHaveAttribute('href', '/responsible-individual/settings#staff-naming')
+  await userEvent.click(
+    await screen.findByRole('button', {
+      name: 'Open staff file for Jordan Lee',
+    }),
+  )
+  expect(
+    await screen.findByRole('link', { name: 'Edit categories' }),
+  ).toHaveAttribute(
+    'href',
+    '/responsible-individual/settings#document-categories',
+  )
+  ri.unmount()
+
+  renderAt(manager, '/manager/staff')
+  await screen.findByRole('button', { name: 'Open staff file for Jordan Lee' })
+  expect(
+    screen.queryByRole('link', { name: 'Customise names & categories' }),
+  ).not.toBeInTheDocument()
+})
+
 describe('company names for staff files and the Homes page', () => {
   afterEach(async () => {
     await saveLabels(responsibleIndividual, { scope: 'staff', labels: {} })
@@ -535,7 +560,7 @@ describe('company home fields on the Homes page', () => {
     expect(detail.getByText('Sprinkler system fitted')).toBeInTheDocument()
     expect(detail.getByText('Yes')).toBeInTheDocument()
     expect(
-      screen.queryByRole('link', { name: 'Customise home fields' }),
+      screen.queryByRole('link', { name: 'Customise names & categories' }),
     ).not.toBeInTheDocument()
     expect(
       screen.queryByRole('button', { name: 'Edit Oakview House' }),
@@ -545,8 +570,8 @@ describe('company home fields on the Homes page', () => {
   it('links the Responsible Individual to the field settings', async () => {
     renderAt(responsibleIndividual, '/responsible-individual/homes')
     expect(
-      await screen.findByRole('link', { name: 'Customise home fields' }),
-    ).toHaveAttribute('href', '/responsible-individual/settings')
+      await screen.findByRole('link', { name: 'Customise names & categories' }),
+    ).toHaveAttribute('href', '/responsible-individual/settings#homes-naming')
   })
 
   it('includes the fields in the Ofsted Mode pack', async () => {
