@@ -84,8 +84,14 @@ export interface YoungPersonProfile {
   nhsNumber: string
   legalStatus: string
   placingAuthority: string
+  /** Placement Plan / care status, e.g. looked after (S20) or care leaver. */
+  careStatus: string
+  consents: string
   iroName: string
   iroContact: string
+  /** Personal Adviser (leaving care). */
+  personalAdviserName: string
+  personalAdviserContact: string
   keyWorker: string
   socialWorkerName: string
   socialWorkerEmail: string
@@ -93,6 +99,8 @@ export interface YoungPersonProfile {
   socialWorkerOffice: string
   nextOfKin: string
   contactRestrictions: string
+  /** Any other professionals or appropriate contacts. */
+  otherContacts: string
   school: string
   schoolContact: string
   gpSurgery: string
@@ -108,6 +116,10 @@ export interface YoungPerson extends YoungPersonProfile {
   initials: string
   fullName: string
   dateOfBirth: string
+  /** Date the young person moved into the home. */
+  moveInDate: string
+  /** Unit within the home, if the home is split into units. */
+  unitId?: string | null
   restricted: boolean
   archived?: boolean
 }

@@ -14,6 +14,7 @@ import {
   useArchiveYoungPerson,
   useHomes,
   useSaveYoungPerson,
+  useUnits,
   useYoungPeople,
 } from '@/data/hooks'
 import { useOfstedMode } from '@/features/ofsted-mode/useOfstedMode'
@@ -33,6 +34,7 @@ export function YoungPeoplePage() {
   const { enabled: ofsted } = useOfstedMode()
   const people = useYoungPeople()
   const homes = useHomes()
+  const units = useUnits()
   const save = useSaveYoungPerson()
   const archive = useArchiveYoungPerson()
   const [archiving, setArchiving] = useState<YoungPerson | null>(null)
@@ -40,6 +42,15 @@ export function YoungPeoplePage() {
   const current = editing && editing !== 'new' ? editing : null
   const [fileId, setFileId] = useState<string | null>(null)
   const file = people.data?.find((y) => y.id === fileId) ?? null
+  const [formHome, setFormHome] = useState('')
+  const formUnits = (units.data ?? []).filter((u) => u.homeId === formHome)
+
+  function startEditing(next: Editing) {
+    setEditing(next)
+    setFormHome(
+      next && next !== 'new' ? next.homeId : (homes.data?.[0]?.id ?? ''),
+    )
+  }
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -50,6 +61,8 @@ export function YoungPeoplePage() {
         homeId: String(f.get('homeId')),
         fullName: String(f.get('fullName')).trim(),
         dateOfBirth: String(f.get('dob')),
+        moveInDate: String(f.get('moveInDate') ?? ''),
+        unitId: String(f.get('unitId') ?? '') || null,
         restricted: f.get('restricted') === 'on',
         ...(Object.fromEntries(
           PROFILE_GROUPS.flatMap((g) => g.fields).map((x) => [
@@ -73,11 +86,13 @@ export function YoungPeoplePage() {
         }
         actions={
           canEdit && (
-            <Button onClick={() => setEditing('new')}>Add young person</Button>
+            <Button onClick={() => startEditing('new')}>
+              Add young person
+            </Button>
           )
         }
       />
-      <QueryState queries={[people, homes]}>
+      <QueryState queries={[people, homes, units]}>
         {people.data?.length === 0 ? (
           <EmptyState title="No records to show" />
         ) : (
@@ -127,7 +142,7 @@ export function YoungPeoplePage() {
                         variant="ghost"
                         size="sm"
                         aria-label={`Edit ${youngPersonName(y, ofsted)}`}
-                        onClick={() => setEditing(y)}
+                        onClick={() => startEditing(y)}
                       >
                         Edit
                       </Button>
@@ -174,7 +189,8 @@ export function YoungPeoplePage() {
                 <Select
                   name="homeId"
                   required
-                  defaultValue={current?.homeId}
+                  value={formHome}
+                  onChange={(e) => setFormHome(e.target.value)}
                   {...p}
                 >
                   {homes.data?.map((h) => (
@@ -194,6 +210,36 @@ export function YoungPeoplePage() {
                   defaultValue={current?.dateOfBirth}
                   {...p}
                 />
+              )}
+            </Field>
+            <Field label="Move-in date">
+              {(p) => (
+                <Input
+                  name="moveInDate"
+                  type="date"
+                  required
+                  defaultValue={current?.moveInDate}
+                  {...p}
+                />
+              )}
+            </Field>
+            <Field label="Unit" hint="Optional">
+              {(p) => (
+                <Select
+                  key={formHome}
+                  name="unitId"
+                  defaultValue={
+                    current?.homeId === formHome ? (current?.unitId ?? '') : ''
+                  }
+                  {...p}
+                >
+                  <option value="">No unit</option>
+                  {formUnits.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name}
+                    </option>
+                  ))}
+                </Select>
               )}
             </Field>
             <label className="flex min-h-11 items-center gap-3">
@@ -251,6 +297,29 @@ export function YoungPeoplePage() {
       >
         {file && (
           <>
+            <section className="mb-5">
+              <h3 className="mb-2 text-sm font-semibold">Placement</h3>
+              <dl className="grid gap-3 text-sm sm:grid-cols-3">
+                <div>
+                  <dt className="font-medium text-slate-800">Home</dt>
+                  <dd className="text-slate-700">
+                    {homes.data?.find((h) => h.id === file.homeId)?.name ?? '—'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="font-medium text-slate-800">Unit</dt>
+                  <dd className="text-slate-700">
+                    {units.data?.find((u) => u.id === file.unitId)?.name ?? '—'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="font-medium text-slate-800">Move-in date</dt>
+                  <dd className="text-slate-700">
+                    {file.moveInDate ? formatDate(file.moveInDate) : '—'}
+                  </dd>
+                </div>
+              </dl>
+            </section>
             {PROFILE_GROUPS.map((g) => (
               <section key={g.title} className="mb-5">
                 <h3 className="mb-2 text-sm font-semibold">{g.title}</h3>

@@ -8,6 +8,7 @@ const yp: YoungPerson = {
   initials: 'A.B.',
   fullName: 'Demo Person',
   dateOfBirth: '2010-01-01',
+  moveInDate: '2024-01-01',
   restricted: false,
   ...profile(),
 }

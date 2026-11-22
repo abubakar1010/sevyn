@@ -267,6 +267,15 @@ export async function saveYoungPerson(
   requireText(input.fullName, 'Full name')
   if (input.dateOfBirth > mock.daysFromNow(0))
     throw new Error('Date of birth cannot be in the future')
+  if (input.moveInDate && input.moveInDate > mock.daysFromNow(0))
+    throw new Error('Move-in date cannot be in the future')
+  if (input.moveInDate && input.moveInDate < input.dateOfBirth)
+    throw new Error('Move-in date cannot be before the date of birth')
+  if (
+    input.unitId &&
+    !mock.units.some((u) => u.id === input.unitId && u.homeId === input.homeId)
+  )
+    throw new Error('Choose a unit in the selected home')
   assertCanWrite(profile, input.homeId)
   const initials = input.fullName
     .split(/\s+/)

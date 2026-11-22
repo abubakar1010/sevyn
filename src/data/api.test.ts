@@ -287,10 +287,30 @@ describe('validation', () => {
         homeId: 'h1',
         fullName: 'Test Person',
         dateOfBirth: '2999-01-01',
+        moveInDate: '',
         restricted: false,
         ...profile(),
       }),
     ).rejects.toThrow('future')
+  })
+  it('rejects future move-in dates and units from another home', async () => {
+    const base = {
+      homeId: 'h1',
+      fullName: 'Test Person',
+      dateOfBirth: '2010-01-01',
+      restricted: false,
+      ...profile(),
+    }
+    await expect(
+      api.saveYoungPerson(manager, { ...base, moveInDate: '2999-01-01' }),
+    ).rejects.toThrow('Move-in date')
+    await expect(
+      api.saveYoungPerson(manager, {
+        ...base,
+        moveInDate: '2020-01-01',
+        unitId: 'u3',
+      }),
+    ).rejects.toThrow('unit')
   })
 })
 

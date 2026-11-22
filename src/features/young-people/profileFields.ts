@@ -26,6 +26,8 @@ export const PROFILE_GROUPS: { title: string; fields: ProfileField[] }[] = [
         label: 'Legal status (e.g. Section 20 / Care Order)',
       },
       { key: 'placingAuthority', label: 'Placing local authority' },
+      { key: 'careStatus', label: 'Placement plan / care status' },
+      { key: 'consents', label: 'Consents', long: true },
       { key: 'iroName', label: 'IRO name' },
       { key: 'iroContact', label: 'IRO contact' },
     ],
@@ -38,12 +40,19 @@ export const PROFILE_GROUPS: { title: string; fields: ProfileField[] }[] = [
       { key: 'socialWorkerEmail', label: 'Social worker email', type: 'email' },
       { key: 'socialWorkerPhone', label: 'Social worker phone', type: 'tel' },
       { key: 'socialWorkerOffice', label: 'Social worker office address' },
+      { key: 'personalAdviserName', label: 'Personal Adviser (PA) name' },
+      { key: 'personalAdviserContact', label: 'Personal Adviser (PA) contact' },
       {
         key: 'nextOfKin',
         label: 'Next of kin / emergency contacts',
         long: true,
       },
       { key: 'contactRestrictions', label: 'Contact restrictions', long: true },
+      {
+        key: 'otherContacts',
+        label: 'Other appropriate contacts',
+        long: true,
+      },
     ],
   },
   {
