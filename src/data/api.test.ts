@@ -485,6 +485,37 @@ describe('customisable document categories', () => {
   })
 })
 
+describe('company labels', () => {
+  it('lets only the Responsible Individual rename labels', async () => {
+    for (const p of [manager, worker])
+      await expect(
+        api.saveLabels(p, { scope: 'staff', labels: { dbs: 'Police check' } }),
+      ).rejects.toThrow('Responsible Individuals only')
+  })
+
+  it('saves renames per page, records them and restores defaults when cleared', async () => {
+    await api.saveLabels(responsibleIndividual, {
+      scope: 'homes',
+      labels: { units: ' Flats ', managerName: 'Home manager' },
+    })
+    const s = await api.getSettings()
+    expect(s.labels.homes).toEqual({
+      units: 'Flats',
+      managerName: 'Home manager',
+    })
+    expect(s.labels.staff).toEqual({})
+    expect((await api.listAuditLog(responsibleIndividual))[0]).toMatchObject({
+      action: 'Renamed labels',
+      target: 'Homes page',
+    })
+    await api.saveLabels(responsibleIndividual, {
+      scope: 'homes',
+      labels: { units: '', managerName: '' },
+    })
+    expect((await api.getSettings()).labels.homes).toEqual({})
+  })
+})
+
 describe('company home fields', () => {
   const settingsFields = async () => (await api.getSettings()).homeFields
   const premises = 'hs-premises'

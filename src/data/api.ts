@@ -3,6 +3,7 @@ import type {
   Audit,
   Policy,
   AuditEntry,
+  LabelScope,
   OrgSettings,
   QualityStandardGroupId,
   DocumentOwner,
@@ -24,6 +25,7 @@ import {
   cleanCustomValues,
   validateFieldConfig,
 } from '@/features/homes/customFields'
+import { validateLabels } from '@/features/labels/labels'
 import { isQsGroupId } from '@/features/young-people/qualityStandards'
 import * as mock from './mock'
 
@@ -507,6 +509,26 @@ export async function saveHomeFields(profile: Profile, input: HomeFieldConfig) {
     mock.orgSettings.homeFields,
   )
   audit(profile, 'Updated home fields', 'Homes')
+  return delay(true)
+}
+
+const SCOPE_LABEL: Record<LabelScope, string> = {
+  staff: 'Staff files',
+  homes: 'Homes page',
+}
+
+/** Replaces the company's names for one page's built-in labels. Blank restores the default. */
+export async function saveLabels(
+  profile: Profile,
+  input: { scope: LabelScope; labels: Record<string, string> },
+) {
+  assertResponsibleIndividual(profile)
+  if (!(input.scope in SCOPE_LABEL)) throw new Error('Unknown page')
+  mock.orgSettings.labels[input.scope] = validateLabels(
+    input.scope,
+    input.labels,
+  )
+  audit(profile, 'Renamed labels', SCOPE_LABEL[input.scope])
   return delay(true)
 }
 

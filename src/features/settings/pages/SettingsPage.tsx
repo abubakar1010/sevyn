@@ -8,6 +8,7 @@ import { QueryState } from '@/components/ui/QueryState'
 import { useSaveSettings, useSettings } from '@/data/hooks'
 import { DocumentCategoriesCard } from '../DocumentCategoriesCard'
 import { HomeFieldsEditor } from '../HomeFieldsEditor'
+import { LabelsCard } from '../LabelsCard'
 
 export function SettingsPage() {
   const settings = useSettings()
@@ -83,7 +84,46 @@ export function SettingsPage() {
           </Card>
         )}
         {settings.data && (
-          <section aria-label="Document categories" className="mt-8">
+          <section
+            id="naming"
+            aria-label="Staff file and Homes page naming"
+            className="mt-8 scroll-mt-24"
+          >
+            <h2 className="text-lg font-semibold">
+              Staff file and Homes page naming
+            </h2>
+            <p className="mb-4 max-w-2xl text-sm text-slate-600">
+              Use your company’s own names for the built-in fields and headings
+              on staff files and the Homes page. Only the wording changes; the
+              information underneath stays the same. Leave a name blank to use
+              the default.
+            </p>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div id="staff-naming" className="scroll-mt-24">
+                <LabelsCard
+                  scope="staff"
+                  title="Staff files"
+                  description="Names on the Staff page and each staff file."
+                  saved={settings.data.labels.staff}
+                />
+              </div>
+              <div id="homes-naming" className="scroll-mt-24">
+                <LabelsCard
+                  scope="homes"
+                  title="Homes page"
+                  description="Names on the Homes page, each home and the Ofsted Mode pack."
+                  saved={settings.data.labels.homes}
+                />
+              </div>
+            </div>
+          </section>
+        )}
+        {settings.data && (
+          <section
+            id="document-categories"
+            aria-label="Document categories"
+            className="mt-8 scroll-mt-24"
+          >
             <h2 className="text-lg font-semibold">Document categories</h2>
             <p className="mb-4 max-w-2xl text-sm text-slate-600">
               Name the categories your teams file documents under. Renaming a

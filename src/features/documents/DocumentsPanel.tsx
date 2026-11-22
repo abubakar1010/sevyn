@@ -22,10 +22,13 @@ export function DocumentsPanel({
   ownerType,
   ownerId,
   homeId,
+  heading = 'Documents',
 }: {
   ownerType: DocumentOwner
   ownerId: string
   homeId: string
+  /** The company's own name for the documents section. */
+  heading?: string
 }) {
   const canEdit = useCanEdit()
   // Support workers may add to a young person's file but cannot delete anything.
@@ -70,9 +73,9 @@ export function DocumentsPanel({
   }
 
   return (
-    <section aria-label="Documents" className="mt-6">
+    <section aria-label={heading} className="mt-6">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h3 className="text-base font-semibold">Documents</h3>
+        <h3 className="text-base font-semibold">{heading}</h3>
         {canUpload && (
           <Button size="sm" onClick={() => setUploadOpen(true)}>
             Upload document

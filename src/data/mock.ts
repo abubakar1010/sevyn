@@ -625,6 +625,7 @@ export const orgSettings: OrgSettings = {
   amberDays: 30,
   documentCategories: structuredClone(DEFAULT_DOCUMENT_CATEGORIES),
   youngPersonCategoryGroups: { ...DEFAULT_YOUNG_PERSON_CATEGORY_GROUPS },
+  labels: { staff: {}, homes: {} },
   homeFields: {
     sections: [{ id: HS_PREMISES, name: 'Premises & safety' }],
     fields: [

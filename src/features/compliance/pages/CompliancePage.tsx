@@ -14,6 +14,7 @@ import {
   usePolicies,
   useAudits,
   useHomeFields,
+  useStaffItemLabels,
 } from '@/data/hooks'
 import { QuickLogAnalytics } from '@/features/quick-logs/QuickLogAnalytics'
 import { formatDate } from '@/lib/format'
@@ -39,6 +40,7 @@ export function CompliancePage() {
   const policies = usePolicies()
   const audits = useAudits()
   const homeFields = useHomeFields()
+  const staffLabels = useStaffItemLabels()
 
   if (
     homes.isPending ||
@@ -72,6 +74,7 @@ export function CompliancePage() {
       audits: audits.data,
       homes: homes.data,
       homeFields,
+      staffLabels,
     },
   )
   const counts = countByStatus(items)

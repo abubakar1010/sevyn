@@ -17,6 +17,7 @@ import {
   useAmberDays,
   useAudits,
   useHomeFields,
+  useStaffItemLabels,
   usePolicies,
 } from '@/data/hooks'
 import { formatDate } from '@/lib/format'
@@ -34,6 +35,7 @@ export function InterimMeasuresPage() {
   const audits = useAudits()
   const homes = useHomes()
   const homeFields = useHomeFields()
+  const staffLabels = useStaffItemLabels()
   const add = useAddInterimMeasure()
   const [target, setTarget] = useState<ComplianceItem | null>(null)
 
@@ -50,6 +52,7 @@ export function InterimMeasuresPage() {
             audits: audits.data,
             homes: homes.data,
             homeFields,
+            staffLabels,
           },
         )
       : []

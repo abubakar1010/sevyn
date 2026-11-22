@@ -26,6 +26,8 @@ export function buildComplianceItems(
     /** With `homeFields`, date fields marked "show on the dashboard" become items. */
     homes?: Home[]
     homeFields?: HomeFieldConfig
+    /** The company's names for the staff date items. */
+    staffLabels?: { dbs?: string; safeguarding?: string }
   } = {},
 ): ComplianceItem[] {
   const measureFor = (key: string) =>
@@ -56,7 +58,7 @@ export function buildComplianceItems(
         `dbs:${s.id}`,
         s.homeId,
         s.fullName,
-        'DBS recheck',
+        extra.staffLabels?.dbs ?? 'DBS recheck',
         s.dbsRecheckDate,
       ),
     )
@@ -65,7 +67,7 @@ export function buildComplianceItems(
         `safeguarding:${s.id}`,
         s.homeId,
         s.fullName,
-        'Safeguarding training',
+        extra.staffLabels?.safeguarding ?? 'Safeguarding training',
         s.safeguardingExpiry,
       ),
     )

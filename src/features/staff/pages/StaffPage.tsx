@@ -8,7 +8,13 @@ import { Modal } from '@/components/ui/Modal'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { QueryState } from '@/components/ui/QueryState'
 import { Table, Td, Th } from '@/components/ui/Table'
-import { useArchiveStaff, useHomes, useSaveStaff, useStaff } from '@/data/hooks'
+import {
+  useArchiveStaff,
+  useHomes,
+  useLabels,
+  useSaveStaff,
+  useStaff,
+} from '@/data/hooks'
 import { useCanEdit } from '@/lib/useCanEdit'
 import { DateStatus } from '@/features/compliance/DateStatus'
 import { useOfstedMode } from '@/features/ofsted-mode/useOfstedMode'
@@ -22,6 +28,7 @@ export function StaffPage() {
   const canEdit = useCanEdit()
   const { enabled: ofsted } = useOfstedMode()
   const staff = useStaff()
+  const label = useLabels('staff')
   const homes = useHomes()
   const save = useSaveStaff()
   const archive = useArchiveStaff()
@@ -101,13 +108,13 @@ export function StaffPage() {
             <Table>
               <thead>
                 <tr>
-                  <Th>Name</Th>
-                  <Th>Role</Th>
-                  <Th>Home</Th>
-                  <Th>DBS recheck</Th>
-                  <Th>Safeguarding training</Th>
-                  <Th>Compliant to work</Th>
-                  <Th>Address</Th>
+                  <Th>{label('fullName')}</Th>
+                  <Th>{label('jobTitle')}</Th>
+                  <Th>{label('home')}</Th>
+                  <Th>{label('dbs')}</Th>
+                  <Th>{label('safeguarding')}</Th>
+                  <Th>{label('compliant')}</Th>
+                  <Th>{label('address')}</Th>
                   {canEdit && (
                     <Th>
                       <span className="sr-only">Actions</span>
@@ -118,27 +125,27 @@ export function StaffPage() {
               <tbody>
                 {shown.map((s) => (
                   <tr key={s.id}>
-                    <Td label="Name" className="font-medium">
+                    <Td label={label('fullName')} className="font-medium">
                       <button
                         type="button"
                         className="text-left hover:underline"
-                        aria-label={`Open staff file for ${s.fullName}`}
+                        aria-label={`Open ${label('staffFile').toLowerCase()} for ${s.fullName}`}
                         onClick={() => setFileId(s.id)}
                       >
                         {s.fullName}
                       </button>
                     </Td>
-                    <Td label="Role">{s.jobTitle}</Td>
-                    <Td label="Home">
+                    <Td label={label('jobTitle')}>{s.jobTitle}</Td>
+                    <Td label={label('home')}>
                       {homes.data?.find((h) => h.id === s.homeId)?.name}
                     </Td>
-                    <Td label="DBS recheck">
+                    <Td label={label('dbs')}>
                       <DateStatus date={s.dbsRecheckDate} />
                     </Td>
-                    <Td label="Safeguarding training">
+                    <Td label={label('safeguarding')}>
                       <DateStatus date={s.safeguardingExpiry} />
                     </Td>
-                    <Td label="Compliant to work">
+                    <Td label={label('compliant')}>
                       <div className="flex flex-col items-start gap-1">
                         <RagBadge
                           status={s.compliantToWork ? 'green' : 'red'}
@@ -151,7 +158,9 @@ export function StaffPage() {
                         )}
                       </div>
                     </Td>
-                    <Td label="Address">{ofsted ? '••••••••' : s.address}</Td>
+                    <Td label={label('address')}>
+                      {ofsted ? '••••••••' : s.address}
+                    </Td>
                     {canEdit && (
                       <Td>
                         <Button
@@ -191,7 +200,7 @@ export function StaffPage() {
             onSubmit={submit}
             className="flex flex-col gap-4"
           >
-            <Field label="Full name">
+            <Field label={label('fullName')}>
               {(p) => (
                 <Input
                   name="fullName"
@@ -201,7 +210,7 @@ export function StaffPage() {
                 />
               )}
             </Field>
-            <Field label="Job title">
+            <Field label={label('jobTitle')}>
               {(p) => (
                 <Input
                   name="jobTitle"
@@ -211,7 +220,7 @@ export function StaffPage() {
                 />
               )}
             </Field>
-            <Field label="Home">
+            <Field label={label('home')}>
               {(p) => (
                 <Select
                   name="homeId"
@@ -227,12 +236,12 @@ export function StaffPage() {
                 </Select>
               )}
             </Field>
-            <Field label="Address">
+            <Field label={label('address')}>
               {(p) => (
                 <Input name="address" defaultValue={current?.address} {...p} />
               )}
             </Field>
-            <Field label="DBS recheck date">
+            <Field label={`${label('dbs')} date`}>
               {(p) => (
                 <Input
                   name="dbs"
@@ -242,7 +251,7 @@ export function StaffPage() {
                 />
               )}
             </Field>
-            <Field label="Safeguarding training expiry">
+            <Field label={`${label('safeguarding')} expiry`}>
               {(p) => (
                 <Input
                   name="safeguarding"
@@ -253,7 +262,7 @@ export function StaffPage() {
               )}
             </Field>
             <Field
-              label="Compliant to work"
+              label={label('compliant')}
               hint="Yes once this staff member has everything your company requires on their file."
             >
               {(p) => (
@@ -267,7 +276,10 @@ export function StaffPage() {
                 </Select>
               )}
             </Field>
-            <Field label="Compliance note" hint="What is missing, if anything.">
+            <Field
+              label={label('complianceNote')}
+              hint="What is missing, if anything."
+            >
               {(p) => (
                 <Textarea
                   name="complianceNote"
@@ -286,30 +298,34 @@ export function StaffPage() {
       <Modal
         open={file !== null}
         onClose={() => setFileId(null)}
-        title={file ? `Staff file: ${file.fullName}` : 'Staff file'}
+        title={
+          file ? `${label('staffFile')}: ${file.fullName}` : label('staffFile')
+        }
       >
         {file && (
           <>
             <dl className="grid gap-3 text-sm sm:grid-cols-2">
               <div>
-                <dt className="font-medium text-slate-800">Role</dt>
+                <dt className="font-medium text-slate-800">
+                  {label('jobTitle')}
+                </dt>
                 <dd className="text-slate-700">{file.jobTitle}</dd>
               </div>
               <div>
-                <dt className="font-medium text-slate-800">Home</dt>
+                <dt className="font-medium text-slate-800">{label('home')}</dt>
                 <dd className="text-slate-700">
                   {homes.data?.find((h) => h.id === file.homeId)?.name}
                 </dd>
               </div>
               <div>
-                <dt className="font-medium text-slate-800">DBS recheck</dt>
+                <dt className="font-medium text-slate-800">{label('dbs')}</dt>
                 <dd>
                   <DateStatus date={file.dbsRecheckDate} />
                 </dd>
               </div>
               <div>
                 <dt className="font-medium text-slate-800">
-                  Safeguarding training
+                  {label('safeguarding')}
                 </dt>
                 <dd>
                   <DateStatus date={file.safeguardingExpiry} />
@@ -320,6 +336,7 @@ export function StaffPage() {
               ownerType="staff"
               ownerId={file.id}
               homeId={file.homeId}
+              heading={label('documents')}
             />
           </>
         )}

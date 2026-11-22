@@ -24,6 +24,7 @@ import {
   useAmberDays,
   useAudits,
   useHomeFields,
+  useLabels,
 } from '@/data/hooks'
 import { DocumentsPanel } from '@/features/documents/DocumentsPanel'
 import { CustomFieldInputs } from '@/features/homes/CustomFieldInputs'
@@ -39,46 +40,40 @@ import {
 type HomeEditing = Home | 'new' | null
 
 type TextKey = Exclude<keyof HomeInput, 'approvedCapacity' | 'customFields'>
+/** Built-in home fields; their names come from the company's label settings. */
 interface HomeField {
   name: TextKey
-  label: string
   type?: string
   required?: boolean
+  placeholder?: string
 }
 
 const HOME_FIELDS: HomeField[] = [
-  { name: 'name', label: 'Home name', required: true },
-  { name: 'address', label: 'Address', required: true },
-  { name: 'ofstedUrn', label: 'Ofsted URN', required: true },
-  { name: 'phone', label: 'Home direct telephone', type: 'tel' },
-  {
-    name: 'outOfHoursPhone',
-    label: 'Out-of-hours / on-call number',
-    type: 'tel',
-  },
-  { name: 'managerName', label: 'Registered manager name' },
-  { name: 'managerEmail', label: 'Registered manager email', type: 'email' },
-  {
-    name: 'managerPhone',
-    label: 'Registered manager direct phone',
-    type: 'tel',
-  },
-  { name: 'laContact', label: 'Local authority / LADO contact details' },
-  { name: 'ageRange', label: 'Age range (e.g. 16-18)' },
-  { name: 'genderPermitted', label: 'Gender permitted' },
+  { name: 'name', required: true },
+  { name: 'address', required: true },
+  { name: 'ofstedUrn', required: true },
+  { name: 'phone', type: 'tel' },
+  { name: 'outOfHoursPhone', type: 'tel' },
+  { name: 'managerName' },
+  { name: 'managerEmail', type: 'email' },
+  { name: 'managerPhone', type: 'tel' },
+  { name: 'laContact' },
+  { name: 'ageRange', placeholder: 'e.g. 16-18' },
+  { name: 'genderPermitted' },
 ]
 
-const DETAIL_ROWS: [string, (h: Home) => string | number][] = [
-  ['Ofsted URN', (h) => h.ofstedUrn],
-  ['Approved capacity', (h) => h.approvedCapacity],
-  ['Home telephone', (h) => h.phone],
-  ['Out-of-hours number', (h) => h.outOfHoursPhone],
-  ['Registered manager', (h) => h.managerName],
-  ['Manager email', (h) => h.managerEmail],
-  ['Manager phone', (h) => h.managerPhone],
-  ['Local authority / LADO', (h) => h.laContact],
-  ['Age range', (h) => h.ageRange],
-  ['Gender permitted', (h) => h.genderPermitted],
+/** Shown on a home's detail view, in this order, after the address. */
+const DETAIL_FIELDS: (keyof HomeInput)[] = [
+  'ofstedUrn',
+  'approvedCapacity',
+  'phone',
+  'outOfHoursPhone',
+  'managerName',
+  'managerEmail',
+  'managerPhone',
+  'laContact',
+  'ageRange',
+  'genderPermitted',
 ]
 
 export function HomesPage() {
@@ -92,6 +87,8 @@ export function HomesPage() {
   const amberDays = useAmberDays()
   const audits = useAudits()
   const homeFields = useHomeFields()
+  const label = useLabels('homes')
+  const unitWord = label('unit').toLowerCase()
   const addHome = useAddHome()
   const addUnit = useAddUnit()
   const updateHome = useUpdateHome()
@@ -186,7 +183,8 @@ export function HomesPage() {
                       </h2>
                       <p className="text-sm text-slate-600">{h.address}</p>
                       <p className="text-sm text-slate-600">
-                        Ofsted URN {h.ofstedUrn} · {h.approvedCapacity} beds
+                        {label('ofstedUrn')} {h.ofstedUrn} ·{' '}
+                        {label('approvedCapacity')} {h.approvedCapacity}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -208,7 +206,9 @@ export function HomesPage() {
                   </p>
                   <ul className="divide-y divide-line rounded-lg border border-line text-sm">
                     {homeUnits.length === 0 && (
-                      <li className="px-3 py-2 text-slate-600">No units yet</li>
+                      <li className="px-3 py-2 text-slate-600">
+                        No {label('units').toLowerCase()} yet
+                      </li>
                     )}
                     {homeUnits.map((u) => (
                       <li key={u.id} className="flex justify-between px-3 py-2">
@@ -219,7 +219,7 @@ export function HomesPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              aria-label={`Delete unit ${u.name}`}
+                              aria-label={`Delete ${unitWord} ${u.name}`}
                               onClick={() => setUnitDeleting(u)}
                             >
                               Delete
@@ -236,7 +236,7 @@ export function HomesPage() {
                       className="self-start"
                       onClick={() => setUnitHome(h.id)}
                     >
-                      Add unit
+                      Add {unitWord}
                     </Button>
                   )}
                 </Card>
@@ -258,19 +258,20 @@ export function HomesPage() {
             className="flex flex-col gap-4"
           >
             {HOME_FIELDS.slice(0, 3).map((x) => (
-              <Field key={x.name} label={x.label}>
+              <Field key={x.name} label={label(x.name)}>
                 {(p) => (
                   <Input
                     name={x.name}
                     type={x.type}
                     required={x.required}
+                    placeholder={x.placeholder}
                     defaultValue={currentHome?.[x.name]}
                     {...p}
                   />
                 )}
               </Field>
             ))}
-            <Field label="Approved capacity / bed count">
+            <Field label={label('approvedCapacity')}>
               {(p) => (
                 <Input
                   name="approvedCapacity"
@@ -283,11 +284,12 @@ export function HomesPage() {
               )}
             </Field>
             {HOME_FIELDS.slice(3).map((x) => (
-              <Field key={x.name} label={x.label}>
+              <Field key={x.name} label={label(x.name)}>
                 {(p) => (
                   <Input
                     name={x.name}
                     type={x.type}
+                    placeholder={x.placeholder}
                     defaultValue={currentHome?.[x.name]}
                     {...p}
                   />
@@ -315,15 +317,22 @@ export function HomesPage() {
       >
         {detail && (
           <>
+            <h3 className="mb-2 text-sm font-semibold">
+              {label('homeDetails')}
+            </h3>
             <dl className="grid gap-3 text-sm sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <dt className="font-medium text-slate-800">Address</dt>
+                <dt className="font-medium text-slate-800">
+                  {label('address')}
+                </dt>
                 <dd className="text-slate-700">{detail.address}</dd>
               </div>
-              {DETAIL_ROWS.map(([label, get]) => (
-                <div key={label}>
-                  <dt className="font-medium text-slate-800">{label}</dt>
-                  <dd className="text-slate-700">{get(detail) || '—'}</dd>
+              {DETAIL_FIELDS.map((key) => (
+                <div key={key}>
+                  <dt className="font-medium text-slate-800">{label(key)}</dt>
+                  <dd className="text-slate-700">
+                    {String(detail[key] ?? '') || '—'}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -332,15 +341,16 @@ export function HomesPage() {
               ownerType="home"
               ownerId={detail.id}
               homeId={detail.id}
+              heading={label('documents')}
             />
           </>
         )}
       </Modal>
       <ConfirmDialog
         open={unitDeleting !== null}
-        title="Delete unit"
-        message={`Delete the unit "${unitDeleting?.name}"? The deletion is recorded in the audit log.`}
-        confirmLabel="Delete unit"
+        title={`Delete ${unitWord}`}
+        message={`Delete the ${unitWord} "${unitDeleting?.name}"? The deletion is recorded in the audit log.`}
+        confirmLabel={`Delete ${unitWord}`}
         pending={removeUnit.isPending}
         error={removeUnit.error}
         onClose={() => setUnitDeleting(null)}
@@ -354,10 +364,10 @@ export function HomesPage() {
       <Modal
         open={unitHome !== null}
         onClose={() => setUnitHome(null)}
-        title="Add unit"
+        title={`Add ${unitWord}`}
       >
         <form onSubmit={submitUnit} className="flex flex-col gap-4">
-          <Field label="Unit name">
+          <Field label={`${label('unit')} name`}>
             {(p) => <Input name="name" required {...p} />}
           </Field>
           <Field label="Capacity">
@@ -374,7 +384,7 @@ export function HomesPage() {
           </Field>
           <FormError error={addUnit.error} />
           <Button type="submit" disabled={addUnit.isPending}>
-            Save unit
+            Save {unitWord}
           </Button>
         </form>
       </Modal>

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/app/useAuth'
-import type { HomeFieldConfig, Profile } from '@/types'
+import { labelLookup } from '@/features/labels/labels'
+import type { HomeFieldConfig, LabelScope, Profile } from '@/types'
 import * as api from './api'
 
 function useScoped<T>(key: string, fn: (p: Profile) => Promise<T>) {
@@ -86,6 +87,21 @@ const NO_HOME_FIELDS: HomeFieldConfig = { sections: [], fields: [] }
 /** The company's extra home fields; empty until settings load. */
 export const useHomeFields = () =>
   useSettings().data?.homeFields ?? NO_HOME_FIELDS
+
+export const useSaveLabels = () =>
+  useWrite(api.saveLabels, ['settings', ...AUDIT])
+
+/** The company's names for a page's built-in labels; defaults until settings load. */
+export function useLabels(scope: LabelScope) {
+  const overrides = useSettings().data?.labels[scope]
+  return labelLookup(scope, overrides)
+}
+
+/** The company's names for the staff date items on the dashboard. */
+export function useStaffItemLabels() {
+  const label = useLabels('staff')
+  return { dbs: label('dbs'), safeguarding: label('safeguarding') }
+}
 
 /** Organisation's amber window in days; falls back to 30 until settings load. */
 export const useAmberDays = () => useSettings().data?.amberDays ?? 30

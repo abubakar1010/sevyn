@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
-import { addInterimMeasure } from '@/data/api'
+import { addInterimMeasure, saveLabels } from '@/data/api'
 import { OfstedModeProvider } from '@/features/ofsted-mode/OfstedModeProvider'
 import { demoUsers } from '@/data/demoUsers'
 import type { Profile } from '@/types'
@@ -384,6 +384,63 @@ it('lists each young person in the Ofsted Mode pack with their records', async (
     await region.findAllByRole('region', { name: 'Safeguarding & incidents' }),
   ).not.toHaveLength(0)
   expect(region.queryByText(/Demo Young Person/)).not.toBeInTheDocument()
+})
+
+describe('company names for staff files and the Homes page', () => {
+  afterEach(async () => {
+    await saveLabels(responsibleIndividual, { scope: 'staff', labels: {} })
+    await saveLabels(responsibleIndividual, { scope: 'homes', labels: {} })
+  })
+
+  it('renames built-in labels in Settings and shows them on the pages', async () => {
+    const { unmount } = renderAt(
+      responsibleIndividual,
+      '/responsible-individual/settings',
+    )
+    const staffCard = within(
+      (
+        await screen.findByRole('button', { name: 'Save staff files names' })
+      ).closest('form')!,
+    )
+    await userEvent.type(
+      staffCard.getByLabelText(/^DBS recheck/),
+      'Police check',
+    )
+    await userEvent.click(
+      staffCard.getByRole('button', { name: 'Save staff files names' }),
+    )
+    expect(await staffCard.findByRole('status')).toHaveTextContent('Saved')
+
+    const homesCard = within(
+      screen
+        .getByRole('button', { name: 'Save homes page names' })
+        .closest('form')!,
+    )
+    await userEvent.type(
+      homesCard.getByLabelText(/^Registered manager/),
+      'Home manager',
+    )
+    await userEvent.click(
+      homesCard.getByRole('button', { name: 'Save homes page names' }),
+    )
+    expect(await homesCard.findByRole('status')).toHaveTextContent('Saved')
+    unmount()
+
+    const staffPage = renderAt(
+      responsibleIndividual,
+      '/responsible-individual/staff',
+    )
+    expect(
+      await screen.findByRole('columnheader', { name: 'Police check' }),
+    ).toBeInTheDocument()
+    staffPage.unmount()
+
+    renderAt(responsibleIndividual, '/responsible-individual/homes')
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Oakview House' }),
+    )
+    expect(await screen.findByText('Home manager')).toBeInTheDocument()
+  })
 })
 
 describe('home profile fields in Settings', () => {

@@ -235,6 +235,9 @@ export interface HomeFieldConfig {
 export type QualityStandardGroupId =
   'placement' | 'contacts' | 'plans' | 'safeguarding' | 'progress'
 
+/** Pages whose built-in names a company can rename. */
+export type LabelScope = 'staff' | 'homes'
+
 export interface OrgSettings {
   name: string
   /** Days before expiry that a compliance item turns amber. */
@@ -243,6 +246,8 @@ export interface OrgSettings {
   documentCategories: Record<DocumentOwner, string[]>
   /** Which Quality Standard group each young people's document category belongs to. */
   youngPersonCategoryGroups: Record<string, QualityStandardGroupId>
+  /** The company's own names for built-in labels, per page; only renamed ones are stored. */
+  labels: Record<LabelScope, Record<string, string>>
   /** Extra fields every home carries; each company defines its own. */
   homeFields: HomeFieldConfig
 }

@@ -16,8 +16,10 @@ import {
   useAudits,
   useDocuments,
   useHomeFields,
+  useStaffItemLabels,
   useHomes,
   useInterimMeasures,
+  useLabels,
   usePolicies,
   useQuickLogs,
   useStaff,
@@ -65,6 +67,8 @@ export function OfstedModePage() {
   const logs = useQuickLogs()
   const amberDays = useAmberDays()
   const homeFields = useHomeFields()
+  const staffLabels = useStaffItemLabels()
+  const label = useLabels('homes')
   const [selected, setSelected] = useState('')
   const [reportDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [openFiles, setOpenFiles] = useState<Set<string>>(() => new Set())
@@ -119,6 +123,7 @@ export function OfstedModePage() {
           audits: audits.data,
           homes: homes.data,
           homeFields,
+          staffLabels,
         },
       ),
       staff: staff.data,
@@ -247,20 +252,27 @@ export function OfstedModePage() {
               </div>
               <Card>
                 <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <Fact label="Ofsted URN" value={home.ofstedUrn} />
-                  <Fact label="Address" value={home.address} />
-                  <Fact
-                    label="Approved capacity"
-                    value={String(home.approvedCapacity)}
-                  />
-                  <Fact label="Age range" value={home.ageRange} />
-                  <Fact label="Gender permitted" value={home.genderPermitted} />
-                  <Fact label="Registered manager" value={home.managerName} />
-                  <Fact label="Manager email" value={home.managerEmail} />
-                  <Fact label="Manager phone" value={home.managerPhone} />
-                  <Fact label="Home phone" value={home.phone} />
-                  <Fact label="Out of hours" value={home.outOfHoursPhone} />
-                  <Fact label="Local authority / LADO" value={home.laContact} />
+                  {(
+                    [
+                      'ofstedUrn',
+                      'address',
+                      'approvedCapacity',
+                      'ageRange',
+                      'genderPermitted',
+                      'managerName',
+                      'managerEmail',
+                      'managerPhone',
+                      'phone',
+                      'outOfHoursPhone',
+                      'laContact',
+                    ] as const
+                  ).map((key) => (
+                    <Fact
+                      key={key}
+                      label={label(key)}
+                      value={String(home[key] ?? '')}
+                    />
+                  ))}
                 </dl>
                 <CustomFieldValues home={home} config={homeFields} />
               </Card>
