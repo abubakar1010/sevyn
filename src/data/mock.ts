@@ -1,4 +1,7 @@
-import { DEFAULT_DOCUMENT_CATEGORIES } from '@/features/documents/categories'
+import {
+  DEFAULT_DOCUMENT_CATEGORIES,
+  DEFAULT_YOUNG_PERSON_CATEGORY_GROUPS,
+} from '@/features/documents/categories'
 import type {
   AppUser,
   Audit,
@@ -497,6 +500,7 @@ export const orgSettings: OrgSettings = {
   name: 'Demo Care Group',
   amberDays: 30,
   documentCategories: structuredClone(DEFAULT_DOCUMENT_CATEGORIES),
+  youngPersonCategoryGroups: { ...DEFAULT_YOUNG_PERSON_CATEGORY_GROUPS },
   homeFields: {
     sections: [{ id: HS_PREMISES, name: 'Premises & safety' }],
     fields: [

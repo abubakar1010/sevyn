@@ -231,12 +231,18 @@ export interface HomeFieldConfig {
   fields: HomeFieldDefinition[]
 }
 
+/** Inspection groups a young person's records are filed under in Ofsted Mode. */
+export type QualityStandardGroupId =
+  'placement' | 'contacts' | 'plans' | 'safeguarding' | 'progress'
+
 export interface OrgSettings {
   name: string
   /** Days before expiry that a compliance item turns amber. */
   amberDays: number
   /** Document categories per file type; each company names its own. */
   documentCategories: Record<DocumentOwner, string[]>
+  /** Which Quality Standard group each young people's document category belongs to. */
+  youngPersonCategoryGroups: Record<string, QualityStandardGroupId>
   /** Extra fields every home carries; each company defines its own. */
   homeFields: HomeFieldConfig
 }

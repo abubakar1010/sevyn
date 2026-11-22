@@ -4,6 +4,7 @@ import type {
   Policy,
   AuditEntry,
   OrgSettings,
+  QualityStandardGroupId,
   DocumentOwner,
   DocumentRecord,
   Home,
@@ -23,6 +24,7 @@ import {
   cleanCustomValues,
   validateFieldConfig,
 } from '@/features/homes/customFields'
+import { isQsGroupId } from '@/features/young-people/qualityStandards'
 import * as mock from './mock'
 
 /**
@@ -524,7 +526,12 @@ export async function saveDocumentCategories(
   profile: Profile,
   input: {
     ownerType: DocumentOwner
-    categories: { name: string; was?: string }[]
+    /** Young people only: the Quality Standard group each category is shown under. */
+    categories: {
+      name: string
+      was?: string
+      group?: QualityStandardGroupId | null
+    }[]
   },
 ) {
   assertResponsibleIndividual(profile)
@@ -554,6 +561,20 @@ export async function saveDocumentCategories(
   mock.orgSettings.documentCategories[input.ownerType] = categories.map(
     (c) => c.name,
   )
+  if (input.ownerType === 'young_person') {
+    // Groups follow renames; removed categories keep their group so their
+    // documents still land in the right place in the inspection pack.
+    const previous = mock.orgSettings.youngPersonCategoryGroups
+    const carried = new Set(categories.map((c) => c.was ?? c.name))
+    const groups: Record<string, QualityStandardGroupId> = Object.fromEntries(
+      Object.entries(previous).filter(([name]) => !carried.has(name)),
+    )
+    for (const c of categories) {
+      const group = c.group === undefined ? previous[c.was ?? c.name] : c.group
+      if (isQsGroupId(group)) groups[c.name] = group
+    }
+    mock.orgSettings.youngPersonCategoryGroups = groups
+  }
   audit(profile, 'Updated document categories', OWNER_LABEL[input.ownerType])
   return delay(true)
 }

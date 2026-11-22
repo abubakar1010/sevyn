@@ -107,8 +107,9 @@ export function SettingsPage() {
               <DocumentCategoriesCard
                 ownerType="young_person"
                 title="Young people"
-                description="Documents held on each young person."
+                description="Documents held on each young person. Choose the Ofsted Mode group each category is shown under."
                 categories={settings.data.documentCategories.young_person}
+                groups={settings.data.youngPersonCategoryGroups}
               />
             </div>
           </section>

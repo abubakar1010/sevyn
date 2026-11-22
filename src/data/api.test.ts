@@ -439,6 +439,41 @@ describe('customisable document categories', () => {
     )
   })
 
+  it('keeps young people category groups through renames and lets the company change them', async () => {
+    const before = (await api.getSettings()).documentCategories.young_person
+    const groups = () =>
+      api.getSettings().then((s) => s.youngPersonCategoryGroups)
+    expect((await groups())['Pathway Plan']).toBe('plans')
+
+    await api.saveDocumentCategories(responsibleIndividual, {
+      ownerType: 'young_person',
+      categories: before.map((name) =>
+        name === 'Pathway Plan'
+          ? { name: 'Pathway & transition plan', was: name }
+          : name === 'Letters'
+            ? { name, was: name, group: 'contacts' }
+            : { name, was: name },
+      ),
+    })
+    let g = await groups()
+    expect(g['Pathway & transition plan']).toBe('plans')
+    expect(g['Pathway Plan']).toBeUndefined()
+    expect(g.Letters).toBe('contacts')
+
+    // clearing a group sends the category to "Other documents"
+    await api.saveDocumentCategories(responsibleIndividual, {
+      ownerType: 'young_person',
+      categories: before.map((name) => ({
+        name,
+        was: name === 'Pathway Plan' ? 'Pathway & transition plan' : name,
+        group: name === 'Letters' ? null : undefined,
+      })),
+    })
+    g = await groups()
+    expect(g['Pathway Plan']).toBe('plans')
+    expect(g.Letters).toBeUndefined()
+  })
+
   it('keeps categories when other settings are saved', async () => {
     await api.saveSettings(responsibleIndividual, {
       name: 'Demo Care Group',
