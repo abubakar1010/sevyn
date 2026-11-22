@@ -25,6 +25,7 @@ import { DocumentsPanel } from '@/features/documents/DocumentsPanel'
 import { YoungPersonRatings } from '@/features/quick-logs/QuickLogAnalytics'
 import { youngPersonName } from '../display'
 import { PROFILE_GROUPS } from '../profileFields'
+import { YoungPersonInspectionFile } from '../YoungPersonInspectionFile'
 
 type Editing = YoungPerson | 'new' | null
 
@@ -126,9 +127,7 @@ export function YoungPeoplePage() {
                   <Td label="Home">
                     {homes.data?.find((h) => h.id === y.homeId)?.name}
                   </Td>
-                  <Td label="Date of birth">
-                    {ofsted ? '••••••' : formatDate(y.dateOfBirth)}
-                  </Td>
+                  <Td label="Date of birth">{formatDate(y.dateOfBirth)}</Td>
                   <Td label="Access">
                     {y.restricted ? (
                       <Badge tone="info">Restricted</Badge>
@@ -295,7 +294,20 @@ export function YoungPeoplePage() {
         onClose={() => setFileId(null)}
         title={file ? `File: ${youngPersonName(file, ofsted)}` : 'File'}
       >
-        {file && (
+        {file && ofsted && (
+          <>
+            <p
+              role="status"
+              className="mb-4 rounded-lg border border-line bg-surface p-3 text-sm text-slate-700"
+            >
+              Ofsted Mode: names are shown as initials, other young people’s
+              names are hidden and staff appear by initials. Records are grouped
+              under the Quality Standards.
+            </p>
+            <YoungPersonInspectionFile yp={file} masked />
+          </>
+        )}
+        {file && !ofsted && (
           <>
             <section className="mb-5">
               <h3 className="mb-2 text-sm font-semibold">Placement</h3>
@@ -328,7 +340,7 @@ export function YoungPeoplePage() {
                     <div key={x.key}>
                       <dt className="font-medium text-slate-800">{x.label}</dt>
                       <dd className="whitespace-pre-wrap text-slate-700">
-                        {ofsted ? '••••••' : file[x.key] || '—'}
+                        {file[x.key] || '—'}
                       </dd>
                     </div>
                   ))}

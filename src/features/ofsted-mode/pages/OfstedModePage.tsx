@@ -26,7 +26,11 @@ import {
 } from '@/data/hooks'
 import { buildComplianceItems } from '@/features/compliance/compliance'
 import { CustomFieldValues } from '@/features/homes/CustomFieldValues'
+import { nameMasker } from '@/features/young-people/qualityStandards'
+import { YoungPersonInspectionFile } from '@/features/young-people/YoungPersonInspectionFile'
+import { cn } from '@/lib/cn'
 import { formatDate } from '@/lib/format'
+import { initialsOf } from '@/lib/roles'
 import { buildInspectionSummary, RATINGS_WINDOW_DAYS } from '../inspection'
 import { useOfstedMode } from '../useOfstedMode'
 
@@ -63,6 +67,18 @@ export function OfstedModePage() {
   const homeFields = useHomeFields()
   const [selected, setSelected] = useState('')
   const [reportDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [openFiles, setOpenFiles] = useState<Set<string>>(() => new Set())
+  const toggleFile = (id: string) =>
+    setOpenFiles((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  // Hides every young person's name and initials staff names in free text.
+  const maskNames = masked
+    ? nameMasker({ people: youngPeople.data ?? [], staff: staff.data ?? [] })
+    : (t: string) => t
 
   const queries = [
     homes,
@@ -174,9 +190,10 @@ export function OfstedModePage() {
           role="status"
           className="mb-4 rounded-lg border border-line bg-surface p-3 text-sm text-slate-700 print:hidden"
         >
-          Personal details are visible. Turn Ofsted Mode on before you share
-          your screen or print, so staff addresses and young people’s names are
-          masked.
+          Names are visible. Turn Ofsted Mode on before you share your screen or
+          print: young people then appear by initials, other young people’s
+          names and staff addresses are hidden, and staff appear by initials.
+          Everything else stays on show.
         </p>
       )}
 
@@ -297,6 +314,97 @@ export function OfstedModePage() {
               </dl>
             </section>
 
+            <section
+              aria-label="Young people's records by Quality Standard"
+              className="mt-8"
+            >
+              <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-semibold">
+                    Young people’s records by Quality Standard
+                  </h2>
+                  <p className="text-sm text-slate-600">
+                    Placement, statutory contacts, care and risk plans,
+                    safeguarding and incidents, and daily support and progress
+                    for each young person living in {home.name}.
+                  </p>
+                </div>
+                {summary.youngPeople.list.length > 1 && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="print:hidden"
+                    onClick={() =>
+                      setOpenFiles((prev) =>
+                        prev.size === summary.youngPeople.list.length
+                          ? new Set()
+                          : new Set(summary.youngPeople.list.map((y) => y.id)),
+                      )
+                    }
+                  >
+                    {openFiles.size === summary.youngPeople.list.length
+                      ? 'Collapse all'
+                      : 'Expand all'}
+                  </Button>
+                )}
+              </div>
+              {summary.youngPeople.list.length === 0 ? (
+                <p className="text-sm text-slate-600">
+                  No young people are living in this home.
+                </p>
+              ) : (
+                <ul className="flex flex-col gap-3">
+                  {summary.youngPeople.list.map((y) => {
+                    const open = openFiles.has(y.id)
+                    const name = masked ? y.initials : y.fullName
+                    return (
+                      <li key={y.id}>
+                        <Card className="break-inside-avoid-page">
+                          <button
+                            type="button"
+                            aria-expanded={open}
+                            aria-controls={`yp-pack-${y.id}`}
+                            onClick={() => toggleFile(y.id)}
+                            className="flex w-full flex-wrap items-center justify-between gap-2 text-left"
+                          >
+                            <span>
+                              <span className="font-semibold">{name}</span>
+                              <span className="block text-sm text-slate-600">
+                                Moved in{' '}
+                                {y.moveInDate
+                                  ? formatDate(y.moveInDate)
+                                  : 'date not recorded'}
+                                {y.restricted && ' · Restricted file'}
+                              </span>
+                            </span>
+                            <span
+                              aria-hidden
+                              className="text-sm font-medium text-primary-700 print:hidden dark:text-primary-200"
+                            >
+                              {open ? 'Hide records' : 'Show records'}
+                            </span>
+                          </button>
+                          <div
+                            id={`yp-pack-${y.id}`}
+                            className={cn(
+                              'mt-4',
+                              open ? 'block' : 'hidden print:block',
+                            )}
+                          >
+                            <YoungPersonInspectionFile
+                              yp={y}
+                              masked={masked}
+                              showRatings={false}
+                            />
+                          </div>
+                        </Card>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )}
+            </section>
+
             <section aria-label="Outstanding items" className="mt-8">
               <h2 className="mb-3 text-lg font-semibold">Outstanding items</h2>
               {summary.outstanding.length === 0 ? (
@@ -322,7 +430,7 @@ export function OfstedModePage() {
                           <RagBadge status={i.status} />
                         </Td>
                         <Td label="Item">{i.label}</Td>
-                        <Td label="Person">{i.subject}</Td>
+                        <Td label="Person">{maskNames(i.subject)}</Td>
                         <Td label="Due">{formatDate(i.due)}</Td>
                         <Td
                           label="Interim measure"
@@ -370,9 +478,12 @@ export function OfstedModePage() {
                 <ul className="divide-y divide-line rounded-lg border border-line text-sm">
                   {summary.staff.notReady.map((s) => (
                     <li key={s.id} className="px-3 py-2">
-                      <span className="font-medium">{s.fullName}</span>
+                      <span className="font-medium">
+                        {masked ? initialsOf(s.fullName) : s.fullName}
+                      </span>
                       <span className="block text-slate-700">
-                        {s.complianceNote || 'Requirements outstanding'}
+                        {maskNames(s.complianceNote) ||
+                          'Requirements outstanding'}
                       </span>
                     </li>
                   ))}

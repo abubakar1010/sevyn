@@ -26,7 +26,13 @@ export interface InspectionSummary {
   /** Red and amber items for this home, red first. */
   outstanding: ComplianceItem[]
   staff: { total: number; ready: number; notReady: StaffMember[] }
-  youngPeople: { count: number; capacity: number; restricted: number }
+  youngPeople: {
+    count: number
+    capacity: number
+    restricted: number
+    /** Young people living in the home, by move-in date (earliest first). */
+    list: YoungPerson[]
+  }
   audits: { openActions: Audit[]; overdue: number }
   /** Organisation-wide policies, which apply to every home. */
   policies: { total: number; overdue: number; dueSoon: number }
@@ -92,6 +98,9 @@ export function buildInspectionSummary({
       count: homeYoungPeople.length,
       capacity: home.approvedCapacity,
       restricted: homeYoungPeople.filter((y) => y.restricted).length,
+      list: [...homeYoungPeople].sort((a, b) =>
+        (a.moveInDate || '').localeCompare(b.moveInDate || ''),
+      ),
     },
     audits: {
       openActions: homeAudits.filter((a) => !a.resolved && a.requiredAction),

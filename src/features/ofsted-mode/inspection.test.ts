@@ -26,8 +26,8 @@ const staff = (id: string, over: Partial<StaffMember> = {}): StaffMember =>
   }) as StaffMember
 
 const people = [
-  { id: 'y1', homeId: 'h1', restricted: false },
-  { id: 'y2', homeId: 'h1', restricted: true },
+  { id: 'y1', homeId: 'h1', restricted: false, moveInDate: '2025-06-01' },
+  { id: 'y2', homeId: 'h1', restricted: true, moveInDate: '2024-02-01' },
   { id: 'y3', homeId: 'h2', restricted: false },
 ] as YoungPerson[]
 
@@ -138,11 +138,17 @@ describe('buildInspectionSummary', () => {
   })
 
   it('counts young people against approved capacity', () => {
-    expect(summary().youngPeople).toEqual({
+    expect(summary().youngPeople).toMatchObject({
       count: 2,
       capacity: 4,
       restricted: 1,
     })
+  })
+
+  it("lists only this home's young people, earliest move-in first", () => {
+    const list = summary().youngPeople.list
+    expect(list.every((y) => y.homeId === 'h1')).toBe(true)
+    expect(list.map((y) => y.id)).toEqual(['y2', 'y1'])
   })
 
   it('lists open audit actions and overdue audits for the home', () => {
