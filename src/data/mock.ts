@@ -338,13 +338,14 @@ export const youngPeople: YoungPerson[] = [
 /** Rated history for the first young person so the progress graph has something to show. */
 const earlierLogs: QuickLog[] = (
   [
-    [-35, { 'Emotional Wellbeing': -1, Education: 0 }],
-    [-30, { 'Emotional Wellbeing': 0, Health: 1 }],
-    [-24, { 'Emotional Wellbeing': 1, Education: 1 }],
+    [-35, { 'Emotional Wellbeing': -1, 'Education / EET': 0 }],
+    [-30, { 'Emotional Wellbeing': 0, Health: 1, Keywork: 1 }],
+    [-24, { 'Emotional Wellbeing': 1, 'Education / EET': 1 }],
     [-18, { 'Family & Relationships': -1, Health: 1 }],
-    [-12, { Education: 1, 'Family & Relationships': 0 }],
+    [-12, { 'Education / EET': 1, 'Family & Relationships': 0 }],
     [-8, { 'Emotional Wellbeing': 1, 'Family & Relationships': 1 }],
-    [-4, { Education: 1, Health: 0, Independence: 1 }],
+    [-6, { Medication: 1, Keywork: 0 }],
+    [-4, { 'Education / EET': 1, Health: 0, Independence: 1 }],
   ] as [number, Record<string, -1 | 0 | 1>][]
 ).map(([days, ratings], i) => ({
   id: `qh${i}`,
