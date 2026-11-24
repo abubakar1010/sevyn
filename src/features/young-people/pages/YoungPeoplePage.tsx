@@ -301,7 +301,7 @@ export function YoungPeoplePage() {
               className="mb-4 rounded-lg border border-line bg-surface p-3 text-sm text-slate-700"
             >
               Ofsted Mode: names are shown as initials, other young people’s
-              names are hidden and staff appear by initials. Records are grouped
+              names are hidden and staff names stay in full. Records are grouped
               under the Quality Standards.
             </p>
             <YoungPersonInspectionFile yp={file} masked />

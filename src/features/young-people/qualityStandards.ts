@@ -1,11 +1,9 @@
 import { formatDate } from '@/lib/format'
-import { initialsOf } from '@/lib/roles'
 import type {
   DocumentRecord,
   Home,
   QualityStandardGroupId,
   QuickLog,
-  StaffMember,
   Unit,
   YoungPerson,
   YoungPersonProfile,
@@ -212,17 +210,16 @@ const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /**
  * Builds the Ofsted Mode masker for one young person's file: their own name becomes
- * their initials, every other young person's name is hidden, and staff names become
- * initials. Matching is whole-word and case-insensitive, longest name first.
+ * their initials and every other young person's name is hidden. Staff names stay in
+ * full, as inspectors check recruitment, DBS and supervision records against named
+ * staff. Matching is whole-word and case-insensitive, longest name first.
  */
 export function nameMasker({
   selfId,
   people,
-  staff,
 }: {
   selfId?: string
   people: Pick<YoungPerson, 'id' | 'fullName' | 'preferredName' | 'initials'>[]
-  staff: Pick<StaffMember, 'fullName'>[]
 }): (text: string) => string {
   const swaps: [string, string][] = []
   for (const p of people) {
@@ -230,9 +227,6 @@ export function nameMasker({
     for (const name of [p.fullName, p.preferredName])
       if (name && name.trim().length > 1) swaps.push([name.trim(), to])
   }
-  for (const s of staff)
-    if (s.fullName.trim())
-      swaps.push([s.fullName.trim(), initialsOf(s.fullName)])
   if (swaps.length === 0) return (t) => t
 
   swaps.sort((a, b) => b[0].length - a[0].length)

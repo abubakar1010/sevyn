@@ -13,7 +13,6 @@ import {
 import { DEFAULT_YOUNG_PERSON_CATEGORY_GROUPS } from '@/features/documents/categories'
 import { YoungPersonRatings } from '@/features/quick-logs/QuickLogAnalytics'
 import { formatDate } from '@/lib/format'
-import { initialsOf } from '@/lib/roles'
 import type { YoungPerson } from '@/types'
 import { buildYoungPersonPack, nameMasker } from './qualityStandards'
 
@@ -24,7 +23,7 @@ export const PACK_LOG_DAYS = 90
 /**
  * One young person's records grouped under the Quality Standards, as an inspector
  * reads them. With `masked` on, the young person appears by initials, other young
- * people's names are hidden and staff appear by initials; everything else is shown.
+ * people's names are hidden and staff keep their full names; everything else is shown.
  */
 export function YoungPersonInspectionFile({
   yp,
@@ -47,17 +46,10 @@ export function YoungPersonInspectionFile({
 
   const staffList = staff.data ?? []
   const mask = masked
-    ? nameMasker({
-        selfId: yp.id,
-        people: people.data ?? [],
-        staff: staffList,
-      })
+    ? nameMasker({ selfId: yp.id, people: people.data ?? [] })
     : (t: string) => t
-  const author = (id: string) => {
-    const name = staffList.find((s) => s.id === id)?.fullName
-    if (!name) return 'Staff member'
-    return masked ? initialsOf(name) : name
-  }
+  const author = (id: string) =>
+    staffList.find((s) => s.id === id)?.fullName ?? 'Staff member'
 
   const pack = buildYoungPersonPack({
     yp,

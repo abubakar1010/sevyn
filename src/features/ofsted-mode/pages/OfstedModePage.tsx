@@ -32,7 +32,6 @@ import { nameMasker } from '@/features/young-people/qualityStandards'
 import { YoungPersonInspectionFile } from '@/features/young-people/YoungPersonInspectionFile'
 import { cn } from '@/lib/cn'
 import { formatDate } from '@/lib/format'
-import { initialsOf } from '@/lib/roles'
 import { buildInspectionSummary, RATINGS_WINDOW_DAYS } from '../inspection'
 import { useOfstedMode } from '../useOfstedMode'
 
@@ -79,9 +78,9 @@ export function OfstedModePage() {
       else next.add(id)
       return next
     })
-  // Hides every young person's name and initials staff names in free text.
+  // Hides every young person's name in free text; staff names stay in full.
   const maskNames = masked
-    ? nameMasker({ people: youngPeople.data ?? [], staff: staff.data ?? [] })
+    ? nameMasker({ people: youngPeople.data ?? [] })
     : (t: string) => t
 
   const queries = [
@@ -197,7 +196,7 @@ export function OfstedModePage() {
         >
           Names are visible. Turn Ofsted Mode on before you share your screen or
           print: young people then appear by initials, other young people’s
-          names and staff addresses are hidden, and staff appear by initials.
+          names and staff addresses are hidden. Staff names stay in full.
           Everything else stays on show.
         </p>
       )}
@@ -491,7 +490,7 @@ export function OfstedModePage() {
                   {summary.staff.notReady.map((s) => (
                     <li key={s.id} className="px-3 py-2">
                       <span className="font-medium">
-                        {masked ? initialsOf(s.fullName) : s.fullName}
+                        {s.fullName}
                       </span>
                       <span className="block text-slate-700">
                         {maskNames(s.complianceNote) ||

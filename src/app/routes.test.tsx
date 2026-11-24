@@ -327,7 +327,7 @@ it('masks young peoples names for the Responsible Individual when Ofsted Mode is
   ).toBeInTheDocument()
 })
 
-it("shows a young person's records by Quality Standard in Ofsted Mode, with names initialled", async () => {
+it("shows a young person's records by Quality Standard in Ofsted Mode, with young people initialled and staff named", async () => {
   renderAt(responsibleIndividual, '/responsible-individual/young-people')
   await screen.findByRole('button', {
     name: 'Open file for Demo Young Person One',
@@ -357,14 +357,13 @@ it("shows a young person's records by Quality Standard in Ofsted Mode, with name
     dialog.getByText('Missing episode and return home interview'),
   ).toBeInTheDocument()
   expect(dialog.queryByText('••••••')).not.toBeInTheDocument()
-  // names: own name initialled, other young people hidden, staff initialled
+  // names: own name initialled, other young people hidden, staff in full
   expect(dialog.queryByText(/Demo Young Person/)).not.toBeInTheDocument()
   expect(
     await dialog.findByText(
-      /Keywork with JL on budgeting\. Disagreement with \[another young person\]/,
+      /Keywork with Jordan Lee on budgeting\. Disagreement with \[another young person\]/,
     ),
   ).toBeInTheDocument()
-  expect(dialog.queryByText(/Sam Taylor|Jordan Lee/)).not.toBeInTheDocument()
 })
 
 it('lists each young person in the Ofsted Mode pack with their records', async () => {

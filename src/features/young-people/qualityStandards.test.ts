@@ -125,7 +125,6 @@ describe('nameMasker', () => {
   const mask = nameMasker({
     selfId: 'y1',
     people: [me, other],
-    staff: [{ fullName: 'Sam Taylor' }, { fullName: 'Alex Morgan' }],
   })
 
   it("initials the young person's own name and preferred name", () => {
@@ -138,9 +137,9 @@ describe('nameMasker', () => {
       'Argued with [another young person] at dinner',
     )
   })
-  it('initials staff names', () => {
+  it('keeps staff full names', () => {
     expect(mask('Keywork with Sam Taylor; Alex Morgan informed')).toBe(
-      'Keywork with ST; AM informed',
+      'Keywork with Sam Taylor; Alex Morgan informed',
     )
   })
   it('only replaces whole names', () => {
@@ -160,7 +159,7 @@ describe('nameMasker', () => {
     expect(progress.logs[0].note).toBe('[another young person] visited J.R.')
     expect(pack.find((g) => g.id === 'contacts')!.facts).toContainEqual({
       label: 'Assigned key worker',
-      value: 'ST',
+      value: 'Sam Taylor',
     })
   })
 })
