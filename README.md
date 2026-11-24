@@ -40,7 +40,7 @@ Demo users on the login page cover each role.
 | Interim measures | yes | yes | yes |
 | Audit log | yes | yes | |
 
-The Ofsted Mode switch is available to Responsible Individuals and Registered Managers. When it is on, young people appear by initials, other young people's names are hidden (also inside notes and document titles), staff appear by initials and staff addresses are hidden. Everything else stays visible.
+The Ofsted Mode switch is available to Responsible Individuals and Registered Managers. When it is on, young people appear by initials, other young people's names are hidden (also inside notes and document titles), staff keep their full names (inspectors check Safer Recruitment, DBS and supervision records against named staff) and staff addresses are hidden. Everything else stays visible.
 
 ## Notes
 - Documents and certificates only record the file name for now; real storage comes with the backend.
